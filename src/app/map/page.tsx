@@ -19,7 +19,7 @@ const ONTARIO_ZOOM = 6;
 const DEBOUNCE_MS = 300;
 
 const MapViewDynamic = dynamic(
-  () => import("@/components/map/MapView").then((m) => ({ default: m.MapView })),
+  () => import("@/components/map/MapView").then((m) => ({ default: m.MapViewWithRef })),
   { ssr: false, loading: () => <div className="w-full h-full flex items-center justify-center bg-gray-100">Loading map...</div> }
 );
 
@@ -151,14 +151,23 @@ function MapPageContent() {
           value={schoolSlug}
           onChange={(slug) => {
             setSchoolSlug(slug);
-            if (!slug && mapRef.current) {
-              mapRef.current.flyTo(
+            if (!slug) {
+              mapRef.current?.flyTo(
                 ONTARIO_CENTER.lat,
                 ONTARIO_CENTER.lng,
                 ONTARIO_ZOOM
               );
               setCenter(ONTARIO_CENTER);
               setZoom(ONTARIO_ZOOM);
+            } else {
+              const u = universities.find((x) => x.slug === slug);
+              if (u) {
+                mapRef.current?.flyTo(u.latitude, u.longitude, 14);
+                setCenter({ lat: u.latitude, lng: u.longitude });
+                setZoom(14);
+                if (debounceRef.current) clearTimeout(debounceRef.current);
+                debounceRef.current = setTimeout(fetchListingsInBounds, 800);
+              }
             }
           }}
           onFlyTo={handleFlyTo}
@@ -175,7 +184,7 @@ function MapPageContent() {
 
       <div className="flex-1 min-h-0 relative">
         <MapViewDynamic
-          ref={mapRef}
+          forwardedRef={mapRef}
           listings={filteredListings}
           universities={universities}
           busStops={nearbyPlaces.bus}
@@ -189,6 +198,12 @@ function MapPageContent() {
           onViewportChange={handleViewportChange}
           selectedListingId={selectedListingId}
           onSelectListing={setSelectedListingId}
+          onUniversityClick={(uni) => {
+            setSchoolSlug(uni.slug);
+            // MapView now handles the actual flyTo; we just sync state
+            setCenter({ lat: uni.latitude, lng: uni.longitude });
+            setZoom(14);
+          }}
         />
       </div>
 

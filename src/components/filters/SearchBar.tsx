@@ -63,7 +63,7 @@ export function SearchBar({
         value={university}
         onChange={(e) => setUniversity(e.target.value)}
         className={cn(
-          "rounded-lg border border-border bg-white px-3 py-2 text-sm text-dark-text focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-0",
+          "rounded-lg border border-border bg-white px-3 py-2 text-sm text-dark-text focus:outline-none focus:ring-1 focus:ring-gray-300 focus:border-gray-400 transition-colors",
           isHero ? "sm:rounded-r-none sm:border-r-0 sm:min-w-[180px]" : "sm:min-w-[160px]"
         )}
       >
@@ -82,7 +82,7 @@ export function SearchBar({
           value={keyword}
           onChange={(e) => setKeyword(e.target.value)}
           className={cn(
-            "pl-9 flex-1",
+            "pl-9 flex-1 focus:outline-none focus:ring-1 focus:ring-gray-300 focus:border-gray-400 transition-colors",
             isHero && "sm:rounded-none sm:border-r-0 border-border"
           )}
         />

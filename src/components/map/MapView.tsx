@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback, useImperativeHandle, forwardRef } from "react";
+import { useRef, useState, useCallback, useImperativeHandle, forwardRef } from "react";
 import Map, {
   MapRef,
   Marker,
@@ -13,6 +13,22 @@ import type { NearbyPlace } from "@/types";
 import { ListingMarker } from "./ListingMarker";
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN || "";
+
+function getUniversityInitials(name: string): string {
+  const known: Record<string, string> = {
+    "University of Waterloo": "UW",
+    "University of Toronto": "UofT",
+    "Western University": "Western",
+    "McMaster University": "Mac",
+    "Queen's University": "Queen's",
+    "University of Ottawa": "uOttawa",
+    "Toronto Metropolitan University": "TMU",
+    "York University": "York",
+    "Wilfrid Laurier University": "WLU",
+    "University of Guelph": "UofG",
+  };
+  return known[name] ?? (name.split(/\s+/).slice(0, 2).map((w) => w[0] ?? "").join("").toUpperCase().slice(0, 3) || "?");
+}
 
 export interface MapViewHandle {
   flyTo: (lat: number, lng: number, zoom: number) => void;
@@ -33,6 +49,7 @@ interface MapViewProps {
   onViewportChange?: (center: { lat: number; lng: number }, zoom: number) => void;
   selectedListingId: string | null;
   onSelectListing: (id: string | null) => void;
+  onUniversityClick?: (university: University) => void;
 }
 
 const MapViewInner = forwardRef<MapViewHandle, MapViewProps>(function MapViewInner(
@@ -50,14 +67,21 @@ const MapViewInner = forwardRef<MapViewHandle, MapViewProps>(function MapViewInn
     onViewportChange,
     selectedListingId,
     onSelectListing,
+    onUniversityClick,
   },
   ref
 ) {
   const mapRef = useRef<MapRef>(null);
+  const [initialViewState] = useState(() => ({
+    longitude: center.lng,
+    latitude: center.lat,
+    zoom,
+  }));
 
   useImperativeHandle(ref, () => ({
     flyTo(lat: number, lng: number, z: number) {
-      mapRef.current?.flyTo({ center: [lng, lat], zoom: z, duration: 1500 });
+      const map = mapRef.current?.getMap();
+      if (map) map.flyTo({ center: [lng, lat], zoom: z, duration: 1500, essential: true });
     },
     getBounds() {
       const map = mapRef.current?.getMap();
@@ -92,11 +116,7 @@ const MapViewInner = forwardRef<MapViewHandle, MapViewProps>(function MapViewInn
     <Map
       ref={mapRef}
       mapboxAccessToken={MAPBOX_TOKEN}
-      initialViewState={{
-        longitude: center.lng,
-        latitude: center.lat,
-        zoom,
-      }}
+      initialViewState={initialViewState}
       onMove={handleMove}
       style={{ width: "100%", height: "100%" }}
       mapStyle="mapbox://styles/mapbox/light-v11"
@@ -109,9 +129,30 @@ const MapViewInner = forwardRef<MapViewHandle, MapViewProps>(function MapViewInn
           latitude={u.latitude}
           anchor="center"
           style={{ zIndex: 5 }}
+          onClick={(e) => {
+            e.originalEvent.stopPropagation();
+            const map = mapRef.current?.getMap();
+            if (map) map.flyTo({ center: [u.longitude, u.latitude], zoom: 14, duration: 1500, essential: true });
+            onUniversityClick?.(u);
+          }}
         >
-          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-xs font-bold shadow-md">
-            {u.slug.slice(0, 2).toUpperCase()}
+          <div className="relative cursor-pointer group">
+            <div className="w-10 h-10 rounded-full bg-white border-2 border-primary shadow-lg overflow-hidden flex items-center justify-center">
+              {u.logoUrl ? (
+                <img
+                  src={u.logoUrl}
+                  alt={u.name}
+                  className="w-8 h-8 object-contain"
+                />
+              ) : (
+                <span className="text-xs font-bold text-primary">
+                  {getUniversityInitials(u.name)}
+                </span>
+              )}
+            </div>
+            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
+              {u.name}
+            </div>
           </div>
         </Marker>
       ))}
@@ -124,6 +165,8 @@ const MapViewInner = forwardRef<MapViewHandle, MapViewProps>(function MapViewInn
           onClick={(e) => {
             e.originalEvent.stopPropagation();
             onSelectListing(listing.id);
+            const map = mapRef.current?.getMap();
+            if (map) map.flyTo({ center: [listing.longitude, listing.latitude], zoom: 15, duration: 1200, essential: true });
           }}
           style={{ zIndex: selectedListingId === listing.id ? 10 : 4 }}
         >
@@ -172,3 +215,11 @@ const MapViewInner = forwardRef<MapViewHandle, MapViewProps>(function MapViewInn
 });
 
 export const MapView = MapViewInner;
+
+/** Wrapper that receives ref via prop so ref works with next/dynamic */
+export function MapViewWithRef(
+  props: React.ComponentProps<typeof MapViewInner> & { forwardedRef: React.Ref<MapViewHandle> }
+) {
+  const { forwardedRef, ...rest } = props;
+  return <MapViewInner ref={forwardedRef} {...rest} />;
+}

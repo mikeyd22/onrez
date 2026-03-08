@@ -31,7 +31,7 @@ export function SchoolFilter({
       value={value}
       onChange={(e) => handleChange(e.target.value)}
       className={cn(
-        "rounded-lg border border-border bg-white px-3 py-2 text-sm text-dark-text shadow-md focus:outline-none focus:ring-2 focus:ring-primary min-w-[180px]",
+        "rounded-lg border border-border bg-white px-3 py-2 text-sm text-dark-text shadow-md focus:outline-none focus:ring-1 focus:ring-gray-300 focus:border-gray-400 transition-colors min-w-[180px]",
         className
       )}
     >

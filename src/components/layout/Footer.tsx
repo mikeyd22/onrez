@@ -1,5 +1,3 @@
-import Link from "next/link";
-
 export function Footer() {
   return (
     <footer className="border-t border-border bg-gray-100/80 mt-auto">
@@ -18,29 +16,7 @@ export function Footer() {
             </span>
           </div>
 
-          {/* Center: Nav links */}
-          <nav className="flex items-center gap-6">
-            <Link
-              href="/"
-              className="text-sm text-medium-text hover:text-primary transition-colors"
-            >
-              Home
-            </Link>
-            <Link
-              href="/map"
-              className="text-sm text-medium-text hover:text-primary transition-colors"
-            >
-              Map
-            </Link>
-            <Link
-              href="/explore"
-              className="text-sm text-medium-text hover:text-primary transition-colors"
-            >
-              Explore
-            </Link>
-          </nav>
-
-          {/* Right */}
+          {/* Right: Tagline */}
           <p className="text-sm text-medium-text">Built for Ontario students</p>
         </div>
       </div>
