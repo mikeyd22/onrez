@@ -34,6 +34,9 @@ export default async function ListingPage({
 
   const listing = listingRowToApi(listingRow as Parameters<typeof listingRowToApi>[0]);
   const universityName = (listingRow as { universities?: { name: string } | null }).universities?.name ?? null;
+  const ownerId = (listingRow as { owner_id: string | null }).owner_id ?? null;
+  const { data: { user } } = await supabase.auth.getUser();
+  const isOwner = !!(user && ownerId && user.id === ownerId);
 
   const { data: reviewRows } = await supabase
     .from("reviews")
@@ -45,7 +48,6 @@ export default async function ListingPage({
     reviewRowToApi(r as Parameters<typeof reviewRowToApi>[0])
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
   let isBookmarked = false;
   const userReviewRow = reviewRows?.find((r: { user_id: string }) => r.user_id === user?.id);
   const userReview = userReviewRow
@@ -73,6 +75,7 @@ export default async function ListingPage({
           <ListingDetail
             listing={listing}
             universityName={universityName ?? undefined}
+            isOwner={isOwner}
           />
           <BookmarkButton
             listingId={id}

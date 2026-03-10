@@ -93,7 +93,7 @@ function ListingFormInner({ universities, useAddressAutocomplete = true, existin
 
   const [description, setDescription] = useState(existingListing?.description ?? "");
   const [address, setAddress] = useState(existingListing?.address ?? "");
-  const [city, setCity] = useState(existingListing?.city ?? "");
+  const [city, setCity] = useState(existingListing?.city ?? ""); // from address autocomplete only; not shown as separate field
   const [latitude, setLatitude] = useState(existingListing?.latitude ?? 43.47);
   const [longitude, setLongitude] = useState(existingListing?.longitude ?? -80.54);
   const [pricePerMonth, setPricePerMonth] = useState(existingListing?.price_per_month ?? 1000);
@@ -134,6 +134,30 @@ function ListingFormInner({ universities, useAddressAutocomplete = true, existin
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+    if (!address?.trim()) {
+      setError("Address is required.");
+      return;
+    }
+    if (pricePerMonth == null || pricePerMonth < 1) {
+      setError("Price is required and must be at least $1.");
+      return;
+    }
+    if (bedrooms == null || bathrooms == null) {
+      setError("Bedrooms and bathrooms are required.");
+      return;
+    }
+    if (!propertyType) {
+      setError("Property type is required.");
+      return;
+    }
+    if (!residencyStatus) {
+      setError("Living status is required.");
+      return;
+    }
+    if (!universityId?.trim()) {
+      setError("Please select your university.");
+      return;
+    }
     setLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -142,54 +166,66 @@ function ListingFormInner({ universities, useAddressAutocomplete = true, existin
         return;
       }
 
-      const universitySlug = universities.find((u) => u.id === universityId)?.slug ?? null;
+      const universitySlug = universityId ? universities.find((u) => u.id === universityId)?.slug ?? null : null;
+      const payload = {
+        title: address,
+        description: description || null,
+        address,
+        city: city || null,
+        latitude,
+        longitude,
+        pricePerMonth,
+        bedrooms,
+        bathrooms,
+        propertyType,
+        amenities,
+        universitySlug,
+        residencyStatus,
+        lastStayedMonth: residencyStatus === "last_stayed" ? lastStayedMonth : null,
+        lastStayedYear: residencyStatus === "last_stayed" ? lastStayedYear : null,
+      };
 
-      const res = await fetch("/api/listings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: address,
-          description: description || null,
-          address,
-          city,
-          latitude,
-          longitude,
-          pricePerMonth,
-          bedrooms,
-          bathrooms,
-          propertyType,
-          amenities,
-          universitySlug,
-          imageUrls: [],
-          residencyStatus,
-          lastStayedMonth: residencyStatus === "last_stayed" ? lastStayedMonth : null,
-          lastStayedYear: residencyStatus === "last_stayed" ? lastStayedYear : null,
-        }),
-      });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      const listingId = data.id;
+      if (existingListing) {
+        const res = await fetch(`/api/listings/${existingListing.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        router.push(`/listing/${existingListing.id}`);
+        router.refresh();
+      } else {
+        const res = await fetch("/api/listings", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...payload, imageUrls: [] }),
+        });
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        const listingId = data.id;
 
-      for (let i = 0; i < photos.length; i++) {
-        const file = photos[i];
-        const path = `${user.id}/${listingId}/${Date.now()}_${file.name}`;
-        const { error: uploadError } = await supabase.storage
-          .from("listing-photos")
-          .upload(path, file);
-        if (!uploadError) {
-          const { data: { publicUrl } } = supabase.storage
+        for (let i = 0; i < photos.length; i++) {
+          const file = photos[i];
+          const path = `${user.id}/${listingId}/${Date.now()}_${file.name}`;
+          const { error: uploadError } = await supabase.storage
             .from("listing-photos")
-            .getPublicUrl(path);
-          await supabase.from("listing_photos").insert({
-            listing_id: listingId,
-            url: publicUrl,
-            display_order: i,
-          });
+            .upload(path, file);
+          if (!uploadError) {
+            const { data: { publicUrl } } = supabase.storage
+              .from("listing-photos")
+              .getPublicUrl(path);
+            await supabase.from("listing_photos").insert({
+              listing_id: listingId,
+              url: publicUrl,
+              display_order: i,
+            });
+          }
         }
-      }
 
-      router.push(`/listing/${listingId}`);
-      router.refresh();
+        router.push(`/listing/${listingId}`);
+        router.refresh();
+      }
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to create listing"
@@ -234,6 +270,7 @@ function ListingFormInner({ universities, useAddressAutocomplete = true, existin
             <AddressAutocomplete
               id="address"
               onSelect={handleAddressSelect}
+              onInputChange={(value) => setAddress(value)}
               defaultValue={address}
               placeholder="Start typing an address..."
             />
@@ -251,18 +288,7 @@ function ListingFormInner({ universities, useAddressAutocomplete = true, existin
       </div>
 
       <div>
-        <Label htmlFor="city">City *</Label>
-        <Input
-          id="city"
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-          required
-          className="mt-1"
-        />
-      </div>
-
-      <div>
-        <Label htmlFor="description">Description</Label>
+        <Label htmlFor="description">Description (optional)</Label>
         <Textarea
           id="description"
           value={description}
@@ -337,7 +363,7 @@ function ListingFormInner({ universities, useAddressAutocomplete = true, existin
       </div>
 
       <div>
-        <p className="text-sm font-medium text-dark-text mb-2">Amenities</p>
+        <p className="text-sm font-medium text-dark-text mb-2">Amenities (optional)</p>
         <div className="flex flex-wrap gap-2">
           {AMENITY_OPTIONS.map((a) => (
             <label key={a} className="inline-flex items-center gap-2">
@@ -409,14 +435,15 @@ function ListingFormInner({ universities, useAddressAutocomplete = true, existin
       </div>
 
       <div>
-        <Label htmlFor="university">University (optional)</Label>
+        <Label htmlFor="university">University *</Label>
         <select
           id="university"
           value={universityId}
           onChange={(e) => setUniversityId(e.target.value)}
           className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
+          required
         >
-          <option value="">None / Not sure</option>
+          <option value="">Select your University</option>
           {universities.map((u) => (
             <option key={u.id} value={u.id}>
               {u.name}

@@ -46,6 +46,8 @@ export interface Listing {
   residencyStatus?: ResidencyStatus | null;
   lastStayedMonth?: number | null;
   lastStayedYear?: number | null;
+  /** Only set when loading "my listings" (owner view). */
+  isActive?: boolean;
 }
 
 export interface Review {

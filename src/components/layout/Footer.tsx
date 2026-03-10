@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export function Footer() {
   return (
     <footer className="border-t border-border bg-gray-100/80 mt-auto">
@@ -5,12 +7,13 @@ export function Footer() {
         <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
           {/* Left: Logo + copyright */}
           <div className="flex items-center gap-2">
-            <div
-              className="flex h-8 w-8 items-center justify-center rounded-lg text-xs font-semibold text-white"
-              style={{ backgroundColor: "#3B5BDB" }}
-            >
-              OR
-            </div>
+            <Image
+              src="/favicon-96x96.png"
+              alt="OnRez"
+              width={32}
+              height={32}
+              className="h-8 w-8 rounded-lg object-contain"
+            />
             <span className="text-sm text-medium-text">
               © {new Date().getFullYear()} OnRez
             </span>

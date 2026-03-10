@@ -2,6 +2,7 @@ import type { Listing } from "@/types";
 import { formatPrice, formatDate } from "@/lib/utils";
 import { StarRating } from "./StarRating";
 import { ListingGallery } from "./ListingGallery";
+import { ListingOwnerActions } from "./ListingOwnerActions";
 import {
   BedDouble,
   Bath,
@@ -31,12 +32,14 @@ function getAmenityIcon(name: string) {
 interface ListingDetailProps {
   listing: Listing;
   universityName?: string;
+  isOwner?: boolean;
   className?: string;
 }
 
 export function ListingDetail({
   listing,
   universityName,
+  isOwner,
   className,
 }: ListingDetailProps) {
   const residencyLabel =
@@ -104,6 +107,7 @@ export function ListingDetail({
               reviewCount={listing.reviewCount ?? 0}
             />
           </div>
+          {isOwner && <ListingOwnerActions listingId={listing.id} />}
         </div>
       </div>
 

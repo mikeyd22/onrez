@@ -56,9 +56,10 @@ export async function PUT(
       "title", "description", "address", "city", "latitude", "longitude",
       "price_per_month", "bedrooms", "bathrooms", "property_type", "amenities",
       "available_from", "available_to", "university_id", "is_active",
+      "residency_status", "last_stayed_month", "last_stayed_year",
     ];
     for (const key of allowed) {
-      const camel = key === "price_per_month" ? "pricePerMonth" : key === "property_type" ? "propertyType" : key === "available_from" ? "availableFrom" : key === "available_to" ? "availableTo" : key === "university_id" ? "universityId" : key;
+      const camel = key === "price_per_month" ? "pricePerMonth" : key === "property_type" ? "propertyType" : key === "available_from" ? "availableFrom" : key === "available_to" ? "availableTo" : key === "university_id" ? "universityId" : key === "residency_status" ? "residencyStatus" : key === "last_stayed_month" ? "lastStayedMonth" : key === "last_stayed_year" ? "lastStayedYear" : key;
       if (body[camel] !== undefined) update[key] = body[camel];
     }
     if (body.universitySlug && !body.universityId) {

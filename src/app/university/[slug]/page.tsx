@@ -28,39 +28,17 @@ export default async function UniversityPage({
 
   if (!uniRow) notFound();
 
-  const { data: listingRows } = await supabase.rpc("listings_near_university", {
-    uni_lat: uniRow.latitude,
-    uni_lng: uniRow.longitude,
-    radius_meters: 5000,
-  });
-
-  const listingIds = (listingRows ?? []).map((r: { id: string }) => r.id);
-  const { data: photos } = await supabase
-    .from("listing_photos")
-    .select("*")
-    .in("listing_id", listingIds.length ? listingIds : ["00000000-0000-0000-0000-000000000000"])
-    .order("display_order");
-
-  const photosByListingId = new Map<string, { id: string; listing_id: string; url: string; display_order: number; alt_text: string | null; created_at: string }[]>();
-  (photos ?? []).forEach((p: { listing_id: string; id: string; url: string; display_order: number; alt_text?: string | null; created_at?: string }) => {
-    const list = photosByListingId.get(p.listing_id) ?? [];
-    list.push({
-      id: p.id,
-      listing_id: p.listing_id,
-      url: p.url,
-      display_order: p.display_order,
-      alt_text: p.alt_text ?? null,
-      created_at: p.created_at ?? new Date().toISOString(),
-    });
-    photosByListingId.set(p.listing_id, list);
-  });
+  const { data: listingRows } = await supabase
+    .from("listings")
+    .select("*, listing_photos(*)")
+    .eq("university_id", uniRow.id)
+    .eq("is_active", true)
+    .order("avg_rating", { ascending: false });
 
   const allListings = (listingRows ?? []).map((r: unknown) => {
     const row = r as Parameters<typeof listingRowToApi>[0] & { id: string };
-    const listingPhotos = (photosByListingId.get(row.id) ?? []).sort((a, b) => a.display_order - b.display_order);
     return listingRowToApi({
       ...row,
-      listing_photos: listingPhotos,
       universities: { slug: uniRow.slug },
     });
   });

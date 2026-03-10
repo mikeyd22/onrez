@@ -12,6 +12,7 @@ export default async function HomePage() {
   const { data: uniRows } = await supabase
     .from("universities")
     .select("*, listings(count)")
+    .eq("listings.is_active", true)
     .order("name");
 
   const universities = (uniRows ?? []).map((u) => {

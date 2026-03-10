@@ -37,6 +37,8 @@ function MapPageContent() {
   const [showShops, setShowShops] = useState(false);
   const [selectedListingId, setSelectedListingId] = useState<string | null>(null);
   const [viewportListings, setViewportListings] = useState<Listing[]>([]);
+  const [schoolListings, setSchoolListings] = useState<Listing[]>([]);
+  const [filterByUniversity, setFilterByUniversity] = useState(false);
   const [center, setCenter] = useState(ONTARIO_CENTER);
   const [zoom, setZoom] = useState(ONTARIO_ZOOM);
   const [nearbyPlaces, setNearbyPlaces] = useState<{ bus: NearbyPlace[]; food: NearbyPlace[]; shops: NearbyPlace[] }>({
@@ -52,6 +54,7 @@ function MapPageContent() {
   }, []);
 
   const fetchListingsInBounds = useCallback(() => {
+    if (filterByUniversity) return;
     const bounds = mapRef.current?.getBounds();
     if (!bounds || zoom < 12) {
       setViewportListings([]);
@@ -81,12 +84,32 @@ function MapPageContent() {
             setViewportListings(listings);
           });
       });
-  }, [zoom, supabase]);
+  }, [zoom, supabase, filterByUniversity]);
+
+  const fetchListingsByUniversity = useCallback(
+    (universityId: string) => {
+      supabase
+        .from("listings")
+        .select("*, listing_photos(*), universities(slug)")
+        .eq("university_id", universityId)
+        .eq("is_active", true)
+        .then(({ data: fullRows }) => {
+          const listings = (fullRows ?? []).map((r: unknown) =>
+            listingRowToApi(r as Parameters<typeof listingRowToApi>[0])
+          );
+          setSchoolListings(listings);
+        });
+    },
+    [supabase]
+  );
 
   const handleViewportChange = useCallback(
     (newCenter: { lat: number; lng: number }, newZoom: number) => {
       setCenter(newCenter);
       setZoom(newZoom);
+      setFilterByUniversity(false);
+      setSchoolSlug("");
+      setSchoolListings([]);
       if (debounceRef.current) clearTimeout(debounceRef.current);
       if (newZoom >= 12) {
         debounceRef.current = setTimeout(fetchListingsInBounds, DEBOUNCE_MS);
@@ -115,21 +138,25 @@ function MapPageContent() {
   }, [showTransit, showFood, showShops, center.lat, center.lng]);
 
   const filteredListings =
-    schoolSlug === ""
+    schoolSlug === "" || !filterByUniversity
       ? viewportListings
-      : viewportListings.filter((l) => l.universitySlug === schoolSlug);
+      : schoolListings;
 
   useEffect(() => {
     if (universityParam && universities.some((u) => u.slug === universityParam)) {
       setSchoolSlug(universityParam);
+      setFilterByUniversity(true);
       const u = universities.find((x) => x.slug === universityParam);
-      if (u && mapRef.current) {
-        mapRef.current.flyTo(u.latitude, u.longitude, 14);
+      if (u) {
+        if (mapRef.current) {
+          mapRef.current.flyTo(u.latitude, u.longitude, 14);
+        }
         setCenter({ lat: u.latitude, lng: u.longitude });
         setZoom(14);
+        fetchListingsByUniversity(u.id);
       }
     }
-  }, [universityParam, universities]);
+  }, [universityParam, universities, fetchListingsByUniversity]);
 
   const handleFlyTo = useCallback((lat: number, lng: number, z: number) => {
     mapRef.current?.flyTo(lat, lng, z);
@@ -150,8 +177,10 @@ function MapPageContent() {
           universities={universities}
           value={schoolSlug}
           onChange={(slug) => {
-            setSchoolSlug(slug);
+            setSchoolSlug(slug ?? "");
             if (!slug) {
+              setFilterByUniversity(false);
+              setSchoolListings([]);
               mapRef.current?.flyTo(
                 ONTARIO_CENTER.lat,
                 ONTARIO_CENTER.lng,
@@ -159,14 +188,16 @@ function MapPageContent() {
               );
               setCenter(ONTARIO_CENTER);
               setZoom(ONTARIO_ZOOM);
+              if (debounceRef.current) clearTimeout(debounceRef.current);
+              debounceRef.current = setTimeout(fetchListingsInBounds, 800);
             } else {
               const u = universities.find((x) => x.slug === slug);
               if (u) {
+                setFilterByUniversity(true);
                 mapRef.current?.flyTo(u.latitude, u.longitude, 14);
                 setCenter({ lat: u.latitude, lng: u.longitude });
                 setZoom(14);
-                if (debounceRef.current) clearTimeout(debounceRef.current);
-                debounceRef.current = setTimeout(fetchListingsInBounds, 800);
+                fetchListingsByUniversity(u.id);
               }
             }
           }}

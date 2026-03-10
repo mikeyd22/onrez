@@ -137,7 +137,7 @@ const MapViewInner = forwardRef<MapViewHandle, MapViewProps>(function MapViewInn
           }}
         >
           <div className="relative cursor-pointer group">
-            <div className="w-10 h-10 rounded-full bg-white border-2 border-primary shadow-lg overflow-hidden flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-primary shadow-lg overflow-hidden flex items-center justify-center">
               {u.logoUrl ? (
                 <img
                   src={u.logoUrl}
@@ -145,7 +145,7 @@ const MapViewInner = forwardRef<MapViewHandle, MapViewProps>(function MapViewInn
                   className="w-8 h-8 object-contain"
                 />
               ) : (
-                <span className="text-xs font-bold text-primary">
+                <span className="text-xs font-bold text-white">
                   {getUniversityInitials(u.name)}
                 </span>
               )}

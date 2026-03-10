@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { listingRowToApi } from "@/lib/api-transform";
-import { ListingGrid } from "@/components/listings/ListingGrid";
+import { MyListingsGrid } from "@/components/listings/MyListingsGrid";
 import { Button } from "@/components/ui/button";
 
 export default async function MyListingsPage() {
@@ -15,6 +15,7 @@ export default async function MyListingsPage() {
     .from("listings")
     .select("*, listing_photos(*), universities(slug)")
     .eq("owner_id", user.id)
+    .eq("is_active", true)
     .order("created_at", { ascending: false });
 
   const listings = (rows ?? []).map((r: unknown) =>
@@ -44,7 +45,7 @@ export default async function MyListingsPage() {
               </Button>
             </div>
           ) : (
-            <ListingGrid listings={listings} />
+            <MyListingsGrid listings={listings} />
           )}
         </div>
       </div>

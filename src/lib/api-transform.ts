@@ -8,7 +8,7 @@ export function listingRowToApi(row: ListingRow & { listing_photos?: ListingPhot
     id: row.id,
     title: row.title ?? row.address,
     address: row.address,
-    city: row.city,
+    city: row.city ?? "",
     latitude: row.latitude,
     longitude: row.longitude,
     pricePerMonth: row.price_per_month,
@@ -25,6 +25,7 @@ export function listingRowToApi(row: ListingRow & { listing_photos?: ListingPhot
     residencyStatus: (row.residency_status as Listing["residencyStatus"]) ?? null,
     lastStayedMonth: row.last_stayed_month ?? null,
     lastStayedYear: row.last_stayed_year ?? null,
+    isActive: row.is_active ?? true,
   };
 }
 

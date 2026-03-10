@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Home, Map, Compass, Menu, X, ChevronDown, Bookmark, List, PlusCircle, LogOut } from "lucide-react";
@@ -55,12 +56,13 @@ export function Navbar({ user, profile }: NavbarProps) {
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 shrink-0">
-          <div
-            className="flex h-9 w-9 items-center justify-center rounded-lg text-sm font-semibold text-white"
-            style={{ backgroundColor: "#3B5BDB" }}
-          >
-            OR
-          </div>
+          <Image
+            src="/favicon-96x96.png"
+            alt="OnRez"
+            width={36}
+            height={36}
+            className="h-9 w-9 rounded-lg object-contain"
+          />
           <span className="text-lg font-semibold text-dark-text">OnRez</span>
         </Link>
 

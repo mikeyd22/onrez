@@ -14,6 +14,8 @@ export interface AddressResult {
 
 interface AddressAutocompleteProps {
   onSelect: (result: AddressResult) => void;
+  /** Called when the user types, so the parent can keep address in sync even if they don't pick a suggestion */
+  onInputChange?: (value: string) => void;
   defaultValue?: string;
   placeholder?: string;
   id?: string;
@@ -22,6 +24,7 @@ interface AddressAutocompleteProps {
 
 export function AddressAutocomplete({
   onSelect,
+  onInputChange,
   defaultValue = "",
   placeholder = "Start typing an address...",
   id,
@@ -68,7 +71,11 @@ export function AddressAutocomplete({
       <input
         id={id}
         value={value}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => {
+          const v = e.target.value;
+          setValue(v);
+          onInputChange?.(v);
+        }}
         onBlur={() => setTimeout(clearSuggestions, 200)}
         disabled={!ready}
         placeholder={placeholder}

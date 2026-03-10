@@ -18,7 +18,7 @@ export interface ListingRow {
   title: string | null;
   description: string | null;
   address: string;
-  city: string;
+  city: string | null;
   latitude: number;
   longitude: number;
   price_per_month: number;

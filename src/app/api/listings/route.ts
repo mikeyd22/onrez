@@ -103,14 +103,34 @@ export async function POST(request: NextRequest) {
       lastStayedYear,
     } = body;
 
-    if (!address || !city || latitude == null || longitude == null || pricePerMonth == null) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    if (!address?.trim()) {
+      return NextResponse.json({ error: "Address is required." }, { status: 400 });
     }
+    if (pricePerMonth == null || pricePerMonth < 1) {
+      return NextResponse.json({ error: "Price is required and must be at least $1." }, { status: 400 });
+    }
+    if (bedrooms == null || bathrooms == null) {
+      return NextResponse.json({ error: "Bedrooms and bathrooms are required." }, { status: 400 });
+    }
+    if (!propertyType) {
+      return NextResponse.json({ error: "Property type is required." }, { status: 400 });
+    }
+    if (!residencyStatus) {
+      return NextResponse.json({ error: "Living status is required." }, { status: 400 });
+    }
+    if (!body.universitySlug?.trim()) {
+      return NextResponse.json({ error: "Please select your university." }, { status: 400 });
+    }
+    const lat = latitude != null ? Number(latitude) : 43.47;
+    const lng = longitude != null ? Number(longitude) : -80.54;
 
     let universityId: string | null = null;
     if (universitySlug) {
       const { data: uni } = await supabase.from("universities").select("id").eq("slug", universitySlug).single();
       universityId = uni?.id ?? null;
+    }
+    if (!universityId) {
+      return NextResponse.json({ error: "Please select your university." }, { status: 400 });
     }
 
     const listingTitle = title ?? address;
@@ -121,9 +141,9 @@ export async function POST(request: NextRequest) {
         title: listingTitle,
         description: description ?? null,
         address,
-        city,
-        latitude: Number(latitude),
-        longitude: Number(longitude),
+        city: city?.trim() || null,
+        latitude: lat,
+        longitude: lng,
         price_per_month: Number(pricePerMonth),
         bedrooms: Number(bedrooms),
         bathrooms: Number(bathrooms),
