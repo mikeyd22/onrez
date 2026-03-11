@@ -9,6 +9,8 @@ interface BookmarkButtonProps {
   listingId: string;
   initialBookmarked: boolean;
   isLoggedIn: boolean;
+  /** Compact icon-only for cards (e.g. listing carousel) */
+  iconOnly?: boolean;
   className?: string;
 }
 
@@ -16,6 +18,7 @@ export function BookmarkButton({
   listingId,
   initialBookmarked,
   isLoggedIn,
+  iconOnly = false,
   className,
 }: BookmarkButtonProps) {
   const router = useRouter();
@@ -48,16 +51,20 @@ export function BookmarkButton({
       onClick={toggleBookmark}
       disabled={loading}
       className={cn(
-        "flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium transition-colors",
+        "flex items-center justify-center rounded-lg border border-border text-sm font-medium transition-colors",
+        iconOnly
+          ? "p-2 border-0 bg-white/90 backdrop-blur-sm hover:bg-white shadow-sm"
+          : "gap-2 px-4 py-2",
         bookmarked ? "bg-red-50 text-red-600 border-red-200" : "bg-white text-medium-text hover:bg-gray-50",
+        iconOnly && bookmarked && "!bg-red-50 !text-red-600",
         className
       )}
       aria-label={bookmarked ? "Remove bookmark" : "Save bookmark"}
     >
       <Heart
-        className={cn("h-5 w-5", bookmarked && "fill-current")}
+        className={cn(iconOnly ? "h-5 w-5" : "h-5 w-5", bookmarked && "fill-current")}
       />
-      {bookmarked ? "Saved" : "Save"}
+      {!iconOnly && (bookmarked ? "Saved" : "Save")}
     </button>
   );
 }

@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 interface SearchBarProps {
   defaultUniversity?: string;
   defaultKeyword?: string;
-  layout?: "hero" | "inline";
+  layout?: "hero" | "heroPhoto" | "inline";
   className?: string;
 }
 
@@ -49,6 +49,43 @@ export function SearchBar({
   };
 
   const isHero = layout === "hero";
+  const isHeroPhoto = layout === "heroPhoto";
+
+  if (isHeroPhoto) {
+    return (
+      <form
+        onSubmit={handleSubmit}
+        className={cn("flex items-center gap-2 w-full", className)}
+      >
+        <select
+          value={university}
+          onChange={(e) => setUniversity(e.target.value)}
+          className="flex-1 px-4 py-2.5 rounded-lg bg-transparent border-none text-sm font-medium text-dark-text focus:outline-none focus:ring-1 focus:ring-gray-300 cursor-pointer"
+        >
+          <option value="">All universities</option>
+          {universities.map((u) => (
+            <option key={u.id} value={u.slug}>
+              {u.name}
+            </option>
+          ))}
+        </select>
+        <div className="w-px h-7 bg-gray-200 shrink-0" aria-hidden />
+        <input
+          type="text"
+          placeholder="Search by keyword..."
+          value={keyword}
+          onChange={(e) => setKeyword(e.target.value)}
+          className="flex-1 px-4 py-2.5 text-sm text-dark-text placeholder:text-medium-text focus:outline-none bg-transparent min-w-0"
+        />
+        <button
+          type="submit"
+          className="bg-primary text-white px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors whitespace-nowrap shrink-0"
+        >
+          Search
+        </button>
+      </form>
+    );
+  }
 
   return (
     <form

@@ -11,6 +11,7 @@ const config: Config = {
     extend: {
       colors: {
         primary: "#3B5BDB",
+        "primary-blue": "#3B5BDB",
         "price-green": "#16A34A",
         "star-yellow": "#F59E0B",
         border: "#E2E8F0",

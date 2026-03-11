@@ -16,7 +16,7 @@ export function listingRowToApi(row: ListingRow & { listing_photos?: ListingPhot
     bathrooms: row.bathrooms,
     propertyType: (row.property_type ?? "apartment") as Listing["propertyType"],
     amenities: row.amenities ?? [],
-    images: images.length ? images : ["https://placehold.co/600x400/E2E8F0/64748B?text=No+Photo"],
+    images: images.length ? images : ["/images/placeholder-listing.jpg"],
     universitySlug: row.universities?.slug ?? "",
     avgRating: Number(row.avg_rating) ?? 0,
     reviewCount: row.review_count ?? 0,
@@ -30,6 +30,13 @@ export function listingRowToApi(row: ListingRow & { listing_photos?: ListingPhot
 }
 
 export function universityRowToApi(row: UniversityRow & { listing_count?: number; avg_rent?: number }): University {
+  const rawCover = row.cover_image_url ?? "";
+  const useLocalCover =
+    !rawCover || rawCover.includes("placehold.co");
+  const coverImageUrl = useLocalCover
+    ? `/images/universities/${row.slug}.jpg`
+    : rawCover;
+
   return {
     id: row.id,
     name: row.name,
@@ -39,7 +46,7 @@ export function universityRowToApi(row: UniversityRow & { listing_count?: number
     longitude: row.longitude,
     description: row.description ?? "",
     logoUrl: row.logo_url ?? "",
-    coverImageUrl: row.cover_image_url ?? "",
+    coverImageUrl,
     listingCount: row.listing_count ?? 0,
     avgRent: row.avg_rent ?? 0,
   };

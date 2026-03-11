@@ -1,22 +1,81 @@
 import Link from "next/link";
-import Image from "next/image";
+import { Star } from "lucide-react";
 import type { Listing } from "@/types";
 import { formatPrice } from "@/lib/utils";
 import { StarRating } from "./StarRating";
+import { BookmarkButton } from "@/components/bookmarks/BookmarkButton";
 import { cn } from "@/lib/utils";
 
 interface ListingCardProps {
   listing: Listing;
   compact?: boolean;
+  /** Carousel/top-rated variant: price on photo, bookmark button, fixed height */
+  variant?: "default" | "carousel";
+  /** For carousel: show bookmark; pass from carousel if user is logged in */
+  isLoggedIn?: boolean;
+  initialBookmarked?: boolean;
   className?: string;
 }
 
 export function ListingCard({
   listing,
   compact = false,
+  variant = "default",
+  isLoggedIn = false,
+  initialBookmarked = false,
   className,
 }: ListingCardProps) {
-  const imageUrl = listing.images[0] ?? `https://placehold.co/600x400/E2E8F0/64748B?text=Photo`;
+  const imageUrl = listing.images[0] ?? "/images/placeholder-listing.jpg";
+  const isCarousel = variant === "carousel";
+
+  if (isCarousel) {
+    return (
+      <Link
+        href={`/listing/${listing.id}`}
+        className={cn(
+          "group block min-w-[280px] max-w-[300px] flex-shrink-0",
+          className
+        )}
+      >
+        <div className="rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
+          <div className="relative h-44 w-full overflow-hidden bg-gray-100">
+            <img
+              src={imageUrl}
+              alt={listing.address}
+              className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            />
+            <span className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-sm text-sm font-bold px-3 py-1.5 rounded-lg shadow-sm text-gray-900">
+              {formatPrice(listing.pricePerMonth)}/mo
+            </span>
+            <div
+              className="absolute top-3 right-3 z-10"
+              onClick={(e) => e.preventDefault()}
+            >
+              <BookmarkButton
+                listingId={listing.id}
+                initialBookmarked={initialBookmarked}
+                isLoggedIn={isLoggedIn}
+                iconOnly
+              />
+            </div>
+          </div>
+          <div className="bg-white p-4">
+            <h3 className="font-medium text-gray-900 truncate">{listing.address}</h3>
+            <p className="text-sm text-gray-500 mt-0.5">{listing.city}</p>
+            <div className="flex items-center gap-1 mt-2">
+              <Star className="w-4 h-4 fill-star-yellow text-star-yellow" />
+              <span className="text-sm font-medium">
+                {(listing.avgRating ?? 0).toFixed(1)}
+              </span>
+              <span className="text-sm text-gray-400">
+                ({listing.reviewCount ?? 0})
+              </span>
+            </div>
+          </div>
+        </div>
+      </Link>
+    );
+  }
 
   return (
     <Link
@@ -35,13 +94,10 @@ export function ListingCard({
             : "aspect-[16/10] w-full rounded-t-xl"
         )}
       >
-        <Image
+        <img
           src={imageUrl}
           alt={listing.address}
-          fill
-          className="object-cover group-hover:scale-105 transition-transform duration-200"
-          sizes={compact ? "96px" : "(max-width: 768px) 100vw, 400px"}
-          unoptimized
+          className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
         />
       </div>
       <div className={compact ? "flex-1 min-w-0 flex flex-col justify-center" : "p-5"}>

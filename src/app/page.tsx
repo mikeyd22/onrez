@@ -39,43 +39,73 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero */}
-      <section
-        className="px-4 py-16 sm:py-20 sm:px-6 lg:px-8"
-        style={{ background: "linear-gradient(to bottom, #EEF2FF, #F8FAFC)" }}
-      >
-        <div className="mx-auto max-w-4xl text-center">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-dark-text">
+      {/* Hero — full photo background with overlay */}
+      <section className="relative h-[520px] flex items-center justify-center">
+        <div className="absolute inset-0">
+          <img
+            src="/images/hero-bg.jpeg"
+            alt=""
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
+        </div>
+        <div className="relative z-10 text-center max-w-3xl mx-auto px-4 w-full">
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
             Find your next home near campus
           </h1>
-          <p className="mt-4 text-lg text-medium-text max-w-2xl mx-auto">
+          <p className="text-lg text-white/80 mb-8">
             Browse student-friendly rentals near Ontario&apos;s top universities
           </p>
-          <div className="mt-8 max-w-3xl mx-auto">
-            <SearchBar layout="hero" />
+          <div className="bg-white rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.12)] p-2 flex items-center gap-2 max-w-2xl mx-auto search-bar-hero">
+            <SearchBar layout="heroPhoto" />
           </div>
         </div>
       </section>
 
-      {/* Browse by University */}
-      <section className="px-4 py-12 sm:py-16 sm:px-6 lg:px-8 bg-light-bg">
-        <div className="mx-auto max-w-7xl">
-          <h2 className="text-2xl font-semibold text-dark-text">
+      {/* Browse by University — white */}
+      <section className="bg-white py-16 px-4">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
             Browse by University
           </h2>
-          <div className="mt-6 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-            {universities.map((u) => (
-              <UniversityCard key={u.id} university={u} />
+          <p className="text-gray-500 mb-8">
+            Find housing near Ontario&apos;s top campuses
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            {universities.map((u, i) => (
+              <div
+                key={u.id}
+                className="animate-fade-in-up"
+                style={{ animationDelay: `${i * 80}ms` }}
+              >
+                <UniversityCard university={u} />
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Top Rated Listings */}
-      <section className="px-4 py-12 sm:py-16 sm:px-6 lg:px-8 bg-white">
-        <div className="mx-auto max-w-7xl">
+      {/* Top Rated Listings — light gray */}
+      <section className="bg-gray-50 py-16 px-4">
+        <div className="max-w-6xl mx-auto">
           <TopRatedCarousel listings={topListings} />
         </div>
+      </section>
+
+      {/* CTA — blue */}
+      <section className="bg-primary py-16 px-4 text-center">
+        <h2 className="text-2xl font-bold text-white mb-3">
+          Know a great place?
+        </h2>
+        <p className="text-white/80 mb-6">
+          Help other students find their next home
+        </p>
+        <a
+          href="/listing/new"
+          className="inline-flex items-center justify-center rounded-xl bg-white text-primary font-medium px-6 py-3 hover:bg-gray-100 transition-colors"
+        >
+          Post a Listing
+        </a>
       </section>
     </div>
   );

@@ -24,8 +24,8 @@ export function TopRatedCarousel({ listings: topRated }: TopRatedCarouselProps) 
 
   return (
     <>
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold text-dark-text">
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="text-2xl font-bold text-gray-900">
           Top Rated Listings
         </h2>
         <Link
@@ -35,17 +35,25 @@ export function TopRatedCarousel({ listings: topRated }: TopRatedCarouselProps) 
           View all
         </Link>
       </div>
-      <div className="mt-6 relative">
+      <p className="text-gray-500 mb-8">
+        Highest-rated rentals from verified students
+      </p>
+      <div className="relative">
         <div
           ref={scrollRef}
-          className="flex gap-6 overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory scrollbar-thin"
+          className="flex gap-5 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4 -mx-4 px-4 scrollbar-hide"
         >
           {topRated.map((listing) => (
             <div
               key={listing.id}
-              className="snap-start shrink-0 w-[280px] sm:w-[320px]"
+              className="snap-start shrink-0"
             >
-              <ListingCard listing={listing} />
+              <ListingCard
+                listing={listing}
+                variant="carousel"
+                isLoggedIn={false}
+                initialBookmarked={false}
+              />
             </div>
           ))}
         </div>
