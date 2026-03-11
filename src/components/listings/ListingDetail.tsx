@@ -13,21 +13,18 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+/** Real icons only (Lucide). Amenities not listed here show label only, no prefix. */
 const AMENITY_ICONS: Record<string, React.ReactNode> = {
+  Wifi: <Wifi className="h-4 w-4" />,
   WiFi: <Wifi className="h-4 w-4" />,
   Parking: <Car className="h-4 w-4" />,
   Laundry: <Bath className="h-4 w-4" />,
-  Gym: <span className="text-sm font-bold">Gym</span>,
-  "Bike storage": <span className="text-sm">Bike</span>,
-  "Utilities included": <span className="text-sm">Util</span>,
-  Backyard: <span className="text-sm">Yard</span>,
-  Concierge: <span className="text-sm">Concierge</span>,
-  "Private entrance": <span className="text-sm">Private</span>,
-  Furnished: <span className="text-sm">Furn</span>,
+  "Laundry (in-unit)": <Bath className="h-4 w-4" />,
+  "Laundry (shared)": <Bath className="h-4 w-4" />,
 };
 
-function getAmenityIcon(name: string) {
-  return AMENITY_ICONS[name] ?? <span className="text-sm">{name.slice(0, 2)}</span>;
+function getAmenityIcon(name: string): React.ReactNode | null {
+  return AMENITY_ICONS[name] ?? null;
 }
 
 interface ListingDetailProps {
