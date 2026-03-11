@@ -75,7 +75,7 @@ function MapPageContent() {
         const ids = rows.map((r: { id: string }) => r.id);
         supabase
           .from("listings")
-          .select("*, listing_photos(*), universities(slug)")
+          .select("*, listing_photos(*), review_photos(*), universities(slug)")
           .in("id", ids)
           .then(({ data: fullRows }) => {
             const listings = (fullRows ?? []).map((r: unknown) =>
@@ -90,7 +90,7 @@ function MapPageContent() {
     (universityId: string) => {
       supabase
         .from("listings")
-        .select("*, listing_photos(*), universities(slug)")
+        .select("*, listing_photos(*), review_photos(*), universities(slug)")
         .eq("university_id", universityId)
         .eq("is_active", true)
         .then(({ data: fullRows }) => {

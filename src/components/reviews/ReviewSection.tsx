@@ -29,18 +29,20 @@ export function ReviewSection({
 
   return (
     <>
-      <div className="space-y-4">
+      <div className="space-y-0">
         {reviews.map((review) => (
           <div key={review.id} className="relative group">
             <ReviewCard review={review} />
             {(userReview?.id === review.id || isAdmin) && (
-              <button
-                type="button"
-                onClick={() => handleDeleteReview(review.id)}
-                className="absolute top-4 right-4 text-sm text-red-600 hover:underline opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                Delete
-              </button>
+              <div className="absolute top-4 right-4 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button
+                  type="button"
+                  onClick={() => handleDeleteReview(review.id)}
+                  className="text-sm text-red-600 hover:underline"
+                >
+                  Delete
+                </button>
+              </div>
             )}
           </div>
         ))}

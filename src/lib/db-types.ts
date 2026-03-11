@@ -55,6 +55,7 @@ export interface ReviewRow {
   user_id: string;
   rating: number;
   comment: string | null;
+  avatar_icon: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -85,4 +86,14 @@ export interface UniversityReviewRow {
   comment: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface ReviewPhotoRow {
+  id: string;
+  review_id: string;
+  listing_id: string;
+  user_id: string;
+  url: string;
+  display_order: number;
+  created_at: string;
 }

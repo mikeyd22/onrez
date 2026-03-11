@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from("listings")
-      .select("*, listing_photos(*), universities(slug)", { count: "exact" })
+      .select("*, listing_photos(*), review_photos(*), universities(slug)", { count: "exact" })
       .eq("is_active", true);
 
     if (q?.trim()) {

@@ -37,7 +37,7 @@ export function MyListingsGrid({ listings }: MyListingsGridProps) {
           </div>
           <div className="p-3 flex gap-2 border-t border-border">
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               className="flex-1"
               asChild
@@ -45,7 +45,7 @@ export function MyListingsGrid({ listings }: MyListingsGridProps) {
               <Link href={`/listing/${listing.id}/edit`}>Edit</Link>
             </Button>
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               className="text-red-600 hover:bg-red-50 hover:text-red-700 flex-1"
               onClick={() => handleDelete(listing.id)}

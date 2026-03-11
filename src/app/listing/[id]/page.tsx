@@ -32,15 +32,51 @@ export default async function ListingPage({
 
   if (!listingRow) notFound();
 
-  const listing = listingRowToApi(listingRow as Parameters<typeof listingRowToApi>[0]);
+  const { data: reviewPhotoRows } = await supabase
+    .from("review_photos")
+    .select("*")
+    .eq("listing_id", id)
+    .order("created_at", { ascending: true });
+
+  const listing = listingRowToApi({
+    ...(listingRow as Parameters<typeof listingRowToApi>[0]),
+    review_photos: reviewPhotoRows ?? [],
+  });
   const universityName = (listingRow as { universities?: { name: string } | null }).universities?.name ?? null;
   const ownerId = (listingRow as { owner_id: string | null }).owner_id ?? null;
   const { data: { user } } = await supabase.auth.getUser();
   const isOwner = !!(user && ownerId && user.id === ownerId);
 
+  const listingPhotos = (listingRow as { listing_photos?: { id: string; url: string; display_order: number }[] }).listing_photos ?? [];
+  const reviewPhotos = (reviewPhotoRows ?? []).map((p) => ({
+    id: p.id,
+    reviewId: p.review_id,
+    listingId: p.listing_id,
+    userId: p.user_id,
+    url: p.url,
+    displayOrder: p.display_order,
+    createdAt: p.created_at,
+  }));
+  const sortedListingPhotos = [...listingPhotos].sort((a, b) => a.display_order - b.display_order);
+  const sortedReviewPhotos = [...reviewPhotos].sort(
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  );
+  const galleryPhotos = [
+    ...sortedListingPhotos.map((p) => ({
+      id: p.id,
+      url: p.url,
+      reviewId: "",
+      listingId: id,
+      userId: "",
+      displayOrder: p.display_order,
+      createdAt: "",
+    })),
+    ...sortedReviewPhotos,
+  ];
+
   const { data: reviewRows } = await supabase
     .from("reviews")
-    .select("*, profiles(display_name, email, avatar_url)")
+    .select("*, review_photos(*)")
     .eq("listing_id", id)
     .order("created_at", { ascending: false });
 
@@ -76,6 +112,7 @@ export default async function ListingPage({
             listing={listing}
             universityName={universityName ?? undefined}
             isOwner={isOwner}
+            galleryPhotos={galleryPhotos.length > 0 ? galleryPhotos : undefined}
           />
           <BookmarkButton
             listingId={id}

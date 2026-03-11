@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import {
@@ -12,6 +13,7 @@ import {
   Bookmark,
   List,
   PlusCircle,
+  MessageSquare,
   LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -62,20 +64,19 @@ export function Navbar({ user, profile }: NavbarProps) {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 px-6 py-3">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        {/* Left — Logo */}
+        {/* Left — Logo + OnRez (same glass pill as menu bar, aligned on same line) */}
         <Link
           href="/"
-          className="flex items-center gap-2.5 shrink-0"
+          className="flex items-center gap-1.5 shrink-0 bg-white/70 backdrop-blur-md rounded-full pl-2.5 pr-4 py-2 -translate-y-0.5 shadow-sm border border-white/50 hover:bg-white/90 transition-colors"
         >
-          <div className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
-            <span className="text-white text-sm font-bold">OR</span>
-          </div>
-          <span
-            className={cn(
-              "text-lg font-semibold",
-              isHome ? "text-white" : "text-gray-900"
-            )}
-          >
+          <Image
+            src="/web-app-manifest-192x192.png"
+            alt="OnRez"
+            width={20}
+            height={20}
+            className="w-5 h-5 rounded-lg object-contain shrink-0"
+          />
+          <span className="text-sm font-medium text-gray-900">
             OnRez
           </span>
         </Link>
@@ -139,6 +140,14 @@ export function Navbar({ user, profile }: NavbarProps) {
                   >
                     <Bookmark className="h-4 w-4" />
                     My Bookmarks
+                  </Link>
+                  <Link
+                    href="/my-reviews"
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100/80"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    <MessageSquare className="h-4 w-4" />
+                    My Reviews
                   </Link>
                   <Link
                     href="/my-listings"
@@ -233,6 +242,14 @@ export function Navbar({ user, profile }: NavbarProps) {
               >
                 <Bookmark className="h-4 w-4" />
                 My Bookmarks
+              </Link>
+              <Link
+                href="/my-reviews"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium text-gray-700 hover:bg-white/60"
+              >
+                <MessageSquare className="h-4 w-4" />
+                My Reviews
               </Link>
               <Link
                 href="/my-listings"

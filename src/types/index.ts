@@ -50,14 +50,26 @@ export interface Listing {
   isActive?: boolean;
 }
 
+export interface ReviewPhoto {
+  id: string;
+  reviewId: string;
+  listingId: string;
+  userId: string;
+  url: string;
+  displayOrder: number;
+  createdAt: string;
+}
+
 export interface Review {
   id: string;
   listingId: string;
-  userName: string;
-  avatarUrl: string;
+  /** Random avatar icon path for anonymous display (e.g. /images/avatars/avatar-1.png). */
+  avatarIcon: string;
   rating: number;
   comment: string;
   createdAt: string;
+  /** Photos attached to this review (when loaded with review_photos). */
+  reviewPhotos?: ReviewPhoto[];
 }
 
 export interface NearbyPlace {

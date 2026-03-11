@@ -11,7 +11,7 @@ export default async function BookmarksPage() {
 
   const { data: bookmarkRows } = await supabase
     .from("bookmarks")
-    .select("*, listings(*, listing_photos(*), universities(slug))")
+    .select("*, listings(*, listing_photos(*), review_photos(*), universities(slug))")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 

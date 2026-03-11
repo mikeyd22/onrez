@@ -2,6 +2,7 @@ import type { Listing } from "@/types";
 import { formatPrice, formatDate } from "@/lib/utils";
 import { StarRating } from "./StarRating";
 import { ListingGallery } from "./ListingGallery";
+import { PhotoCollage } from "./PhotoCollage";
 import { ListingOwnerActions } from "./ListingOwnerActions";
 import {
   BedDouble,
@@ -33,6 +34,8 @@ interface ListingDetailProps {
   listing: Listing;
   universityName?: string;
   isOwner?: boolean;
+  /** Combined listing + review photos for collage; when set, shows PhotoCollage instead of ListingGallery */
+  galleryPhotos?: { id: string; url: string }[];
   className?: string;
 }
 
@@ -40,6 +43,7 @@ export function ListingDetail({
   listing,
   universityName,
   isOwner,
+  galleryPhotos,
   className,
 }: ListingDetailProps) {
   const residencyLabel =
@@ -53,7 +57,11 @@ export function ListingDetail({
 
   return (
     <div className={cn("space-y-8", className)}>
-      <ListingGallery images={listing.images} title={listing.address} />
+      {galleryPhotos && galleryPhotos.length > 0 ? (
+        <PhotoCollage photos={galleryPhotos} />
+      ) : (
+        <ListingGallery images={listing.images} title={listing.address} />
+      )}
 
       <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
         <div>

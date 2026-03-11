@@ -69,7 +69,7 @@ export function ListingCard({
                   {(listing.avgRating ?? 0).toFixed(1)}
                 </span>
                 <span className="text-sm text-gray-400">
-                  ({listing.reviewCount} {pluralize(listing.reviewCount, "review")})
+                  ({listing.reviewCount ?? 0} {pluralize(listing.reviewCount ?? 0, "review")})
                 </span>
               </div>
             ) : (

@@ -28,7 +28,7 @@ export default async function HomePage() {
 
   const { data: topListingRows } = await supabase
     .from("listings")
-    .select("*, listing_photos(*), universities(slug)")
+    .select("*, listing_photos(*), review_photos(*), universities(slug)")
     .eq("is_active", true)
     .order("avg_rating", { ascending: false })
     .limit(10);

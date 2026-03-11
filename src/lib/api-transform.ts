@@ -1,9 +1,18 @@
-import type { Listing, University, Review, UniversityReview } from "@/types";
-import type { ListingRow, ListingPhotoRow, UniversityRow, ReviewRow, ProfileRow, UniversityReviewRow } from "./db-types";
+import type { Listing, University, Review, ReviewPhoto, UniversityReview } from "@/types";
+import type { ListingRow, ListingPhotoRow, UniversityRow, ReviewRow, ReviewPhotoRow, ProfileRow, UniversityReviewRow } from "./db-types";
 
-export function listingRowToApi(row: ListingRow & { listing_photos?: ListingPhotoRow[]; universities?: { slug: string } | null }): Listing {
-  const photos = row.listing_photos ?? [];
-  const images = photos.sort((a, b) => a.display_order - b.display_order).map((p) => p.url);
+export function listingRowToApi(
+  row: ListingRow & {
+    listing_photos?: ListingPhotoRow[];
+    review_photos?: ReviewPhotoRow[];
+    universities?: { slug: string } | null;
+  }
+): Listing {
+  const listingPhotos = row.listing_photos ?? [];
+  const reviewPhotos = row.review_photos ?? [];
+  const listingUrls = listingPhotos.sort((a, b) => a.display_order - b.display_order).map((p) => p.url);
+  const reviewUrls = reviewPhotos.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()).map((p) => p.url);
+  const images = listingUrls.length > 0 ? [...listingUrls, ...reviewUrls] : reviewUrls;
   return {
     id: row.id,
     title: row.title ?? row.address,
@@ -52,15 +61,30 @@ export function universityRowToApi(row: UniversityRow & { listing_count?: number
   };
 }
 
-export function reviewRowToApi(row: ReviewRow & { profiles?: ProfileRow | null }): Review {
+export function reviewPhotoRowToApi(row: ReviewPhotoRow): ReviewPhoto {
+  return {
+    id: row.id,
+    reviewId: row.review_id,
+    listingId: row.listing_id,
+    userId: row.user_id,
+    url: row.url,
+    displayOrder: row.display_order,
+    createdAt: row.created_at,
+  };
+}
+
+export function reviewRowToApi(
+  row: ReviewRow & { review_photos?: ReviewPhotoRow[] }
+): Review {
+  const reviewPhotos = (row.review_photos ?? []).map((p) => reviewPhotoRowToApi(p));
   return {
     id: row.id,
     listingId: row.listing_id,
-    userName: row.profiles?.display_name ?? row.profiles?.email ?? "Anonymous",
-    avatarUrl: row.profiles?.avatar_url ?? `https://placehold.co/40x40/E2E8F0/64748B?text=${(row.profiles?.display_name ?? "?")[0]}`,
+    avatarIcon: row.avatar_icon ?? "/images/avatars/avatar-1.png",
     rating: row.rating,
     comment: row.comment ?? "",
     createdAt: row.created_at,
+    reviewPhotos: reviewPhotos.length > 0 ? reviewPhotos : undefined,
   };
 }
 

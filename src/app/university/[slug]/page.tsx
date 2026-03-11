@@ -30,7 +30,7 @@ export default async function UniversityPage({
 
   const { data: listingRows } = await supabase
     .from("listings")
-    .select("*, listing_photos(*)")
+    .select("*, listing_photos(*), review_photos(*)")
     .eq("university_id", uniRow.id)
     .eq("is_active", true)
     .order("avg_rating", { ascending: false });
