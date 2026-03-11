@@ -27,3 +27,8 @@ export function formatDate(dateStr: string): string {
 export function defaultQuantity(value: number | null | undefined): number {
   return value ?? 0;
 }
+
+/** Pluralize a noun based on count: "1 listing" vs "5 listings". */
+export function pluralize(count: number, singular: string, plural?: string): string {
+  return count === 1 ? singular : (plural ?? `${singular}s`);
+}

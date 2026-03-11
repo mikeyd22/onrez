@@ -102,10 +102,16 @@ export function ListingDetail({
             </p>
           )}
           <div className="mt-2">
-            <StarRating
-              rating={listing.avgRating ?? 0}
-              reviewCount={listing.reviewCount ?? 0}
-            />
+            {(listing.reviewCount ?? 0) > 0 ? (
+              <StarRating
+                rating={listing.avgRating ?? 0}
+                reviewCount={listing.reviewCount ?? 0}
+              />
+            ) : (
+              <span className="inline-block text-xs font-medium bg-emerald-50 text-emerald-700 px-2 py-1 rounded-full">
+                New
+              </span>
+            )}
           </div>
           {isOwner && <ListingOwnerActions listingId={listing.id} />}
         </div>

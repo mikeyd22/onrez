@@ -97,13 +97,26 @@ export default async function ListingPage({
         <section className="mt-12">
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
             <div className="flex flex-wrap items-center gap-4">
-              <h2 className="text-2xl font-semibold text-dark-text">
-                Reviews ({reviews.length})
-              </h2>
-              <StarRating
-                rating={listing.avgRating ?? 0}
-                reviewCount={listing.reviewCount ?? 0}
-              />
+              {reviews.length > 0 ? (
+                <>
+                  <h2 className="text-2xl font-semibold text-dark-text">
+                    Reviews ({reviews.length} {reviews.length === 1 ? "review" : "reviews"})
+                  </h2>
+                  <StarRating
+                    rating={listing.avgRating ?? 0}
+                    reviewCount={listing.reviewCount ?? 0}
+                  />
+                </>
+              ) : (
+                <>
+                  <h2 className="text-2xl font-semibold text-dark-text">
+                    Reviews
+                  </h2>
+                  <span className="text-sm text-gray-500">
+                    No reviews yet — be the first!
+                  </span>
+                </>
+              )}
             </div>
             {user ? (
               <a

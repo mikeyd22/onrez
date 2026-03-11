@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Star } from "lucide-react";
 import type { Listing } from "@/types";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, pluralize } from "@/lib/utils";
 import { StarRating } from "./StarRating";
 import { BookmarkButton } from "@/components/bookmarks/BookmarkButton";
 import { cn } from "@/lib/utils";
@@ -62,15 +62,21 @@ export function ListingCard({
           <div className="bg-white p-4">
             <h3 className="font-medium text-gray-900 truncate">{listing.address}</h3>
             <p className="text-sm text-gray-500 mt-0.5">{listing.city}</p>
-            <div className="flex items-center gap-1 mt-2">
-              <Star className="w-4 h-4 fill-star-yellow text-star-yellow" />
-              <span className="text-sm font-medium">
-                {(listing.avgRating ?? 0).toFixed(1)}
+            {(listing.reviewCount ?? 0) > 0 ? (
+              <div className="flex items-center gap-1 mt-2">
+                <Star className="w-4 h-4 fill-star-yellow text-star-yellow" />
+                <span className="text-sm font-medium">
+                  {(listing.avgRating ?? 0).toFixed(1)}
+                </span>
+                <span className="text-sm text-gray-400">
+                  ({listing.reviewCount} {pluralize(listing.reviewCount, "review")})
+                </span>
+              </div>
+            ) : (
+              <span className="inline-block mt-2 text-xs font-medium bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full">
+                New
               </span>
-              <span className="text-sm text-gray-400">
-                ({listing.reviewCount ?? 0})
-              </span>
-            </div>
+            )}
           </div>
         </div>
       </Link>
@@ -110,13 +116,19 @@ export function ListingCard({
         <p className={compact ? "text-sm text-medium-text mt-0.5" : "font-bold text-dark-text text-base mt-0.5"}>
           {formatPrice(listing.pricePerMonth)}/mo
         </p>
-        <div className="mt-2">
-          <StarRating
-            rating={listing.avgRating ?? 0}
-            reviewCount={listing.reviewCount ?? 0}
-            size="sm"
-          />
-        </div>
+        {(listing.reviewCount ?? 0) > 0 ? (
+          <div className="mt-2">
+            <StarRating
+              rating={listing.avgRating ?? 0}
+              reviewCount={listing.reviewCount ?? 0}
+              size="sm"
+            />
+          </div>
+        ) : (
+          <span className="inline-block mt-2 text-xs font-medium bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full">
+            New
+          </span>
+        )}
         {!compact && (
           <span className="inline-block mt-2 text-xs font-medium text-medium-text bg-gray-100 px-2 py-0.5 rounded">
             {listing.propertyType}

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { University } from "@/types";
-import { cn } from "@/lib/utils";
+import { cn, pluralize } from "@/lib/utils";
 
 interface UniversityCardProps {
   university: University;
@@ -24,7 +24,7 @@ export function UniversityCard({ university, className }: UniversityCardProps) {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
           <span className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-xs font-medium px-2.5 py-1 rounded-full text-gray-700">
-            {university.listingCount ?? 0} listings
+            {university.listingCount ?? 0} {pluralize(university.listingCount ?? 0, "listing")}
           </span>
         </div>
         <div className="bg-white p-4">

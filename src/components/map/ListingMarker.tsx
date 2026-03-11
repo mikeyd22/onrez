@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Listing } from "@/types";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, pluralize } from "@/lib/utils";
 import { StarRatingDisplay } from "@/components/listings/StarRatingDisplay";
 import { cn } from "@/lib/utils";
 
@@ -45,10 +45,18 @@ export function ListingMarker({ price, selected, listing }: ListingMarkerProps) 
               {formatPrice(listing.pricePerMonth)}/mo
             </p>
             <div className="flex items-center gap-1 mt-1">
-              <StarRatingDisplay rating={listing.avgRating ?? 0} size="sm" />
-              <span className="text-xs text-medium-text ml-1">
-                {listing.reviewCount ?? 0} reviews
-              </span>
+              {(listing.reviewCount ?? 0) > 0 ? (
+                <>
+                  <StarRatingDisplay rating={listing.avgRating ?? 0} size="sm" />
+                  <span className="text-xs text-medium-text ml-1">
+                    {listing.reviewCount} {pluralize(listing.reviewCount ?? 0, "review")}
+                  </span>
+                </>
+              ) : (
+                <span className="text-xs font-medium bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full">
+                  New
+                </span>
+              )}
             </div>
             <Link
               href={`/listing/${listing.id}`}

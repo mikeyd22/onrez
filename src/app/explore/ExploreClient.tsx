@@ -6,6 +6,7 @@ import { SearchBar } from "@/components/filters/SearchBar";
 import { FilterPanel, DEFAULT_FILTERS, type FilterState } from "@/components/filters/FilterPanel";
 import { SortDropdown, type SortOption } from "@/components/filters/SortDropdown";
 import { ListingGrid } from "@/components/listings/ListingGrid";
+import { pluralize } from "@/lib/utils";
 import type { Listing } from "@/types";
 
 interface ExploreClientProps {
@@ -139,7 +140,7 @@ export function ExploreClient({
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
           <p className="text-sm text-medium-text">
-            {loading ? "Loading…" : `Showing ${listings.length} of ${total} listings`}
+            {loading ? "Loading…" : `Showing ${listings.length} of ${total} ${pluralize(total, "listing")}`}
           </p>
           <SortDropdown value={sort} onChange={handleSortChange} />
         </div>

@@ -39,8 +39,8 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero — full photo background with overlay */}
-      <section className="relative h-[520px] flex items-center justify-center">
+      {/* Hero — full photo background with overlay, extends under fixed navbar */}
+      <section className="relative h-[520px] flex items-center justify-center -mt-[72px]">
         <div className="absolute inset-0">
           <img
             src="/images/hero-bg.jpeg"
@@ -49,7 +49,7 @@ export default async function HomePage() {
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70" />
         </div>
-        <div className="relative z-10 text-center max-w-3xl mx-auto px-4 w-full">
+        <div className="relative z-10 text-center max-w-3xl mx-auto px-4 w-full pt-20">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
             Find your next home near campus
           </h1>
@@ -93,16 +93,16 @@ export default async function HomePage() {
       </section>
 
       {/* CTA — blue */}
-      <section className="bg-primary py-16 px-4 text-center">
-        <h2 className="text-2xl font-bold text-white mb-3">
+      <section className="bg-primary py-8 px-4 text-center">
+        <h2 className="text-xl font-bold text-white mb-2">
           Know a great place?
         </h2>
-        <p className="text-white/80 mb-6">
+        <p className="text-white/80 text-sm mb-4">
           Help other students find their next home
         </p>
         <a
           href="/listing/new"
-          className="inline-flex items-center justify-center rounded-xl bg-white text-primary font-medium px-6 py-3 hover:bg-gray-100 transition-colors"
+          className="inline-flex items-center justify-center rounded-xl bg-white text-primary font-medium px-5 py-2 text-sm hover:bg-gray-100 transition-colors"
         >
           Post a Listing
         </a>

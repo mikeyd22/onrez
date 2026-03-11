@@ -1,11 +1,19 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Home, Map, Compass, Menu, X, ChevronDown, Bookmark, List, PlusCircle, LogOut } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useRouter, usePathname } from "next/navigation";
+import {
+  Home,
+  Map,
+  Compass,
+  Menu,
+  ChevronDown,
+  Bookmark,
+  List,
+  PlusCircle,
+  LogOut,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
@@ -23,14 +31,15 @@ interface NavbarProps {
 
 export function Navbar({ user, profile }: NavbarProps) {
   const router = useRouter();
+  const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setDropdownOpen(false);
+        setMenuOpen(false);
       }
     }
     document.addEventListener("click", handleClickOutside);
@@ -40,106 +49,121 @@ export function Navbar({ user, profile }: NavbarProps) {
   async function handleLogout() {
     const supabase = createClient();
     await supabase.auth.signOut();
-    setDropdownOpen(false);
+    setMenuOpen(false);
     setMobileOpen(false);
     router.push("/");
     router.refresh();
   }
 
   const displayName = profile?.display_name || user?.email?.split("@")[0] || "Account";
+  const initials = displayName.slice(0, 2).toUpperCase();
+  const isHome = pathname === "/";
 
   return (
-    <header
-      className="sticky top-0 z-50 w-full border-b border-border/60 bg-gradient-to-r from-[#EEF2FF] to-[#E0E7FF] shadow-sm"
-      style={{ background: "linear-gradient(to right, #EEF2FF, #E0E7FF)" }}
-    >
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2 shrink-0">
-          <Image
-            src="/favicon-96x96.png"
-            alt="OnRez"
-            width={36}
-            height={36}
-            className="h-9 w-9 rounded-lg object-contain"
-          />
-          <span className="text-lg font-semibold text-dark-text">OnRez</span>
+    <header className="fixed top-0 left-0 right-0 z-50 px-6 py-3">
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
+        {/* Left — Logo */}
+        <Link
+          href="/"
+          className="flex items-center gap-2.5 shrink-0"
+        >
+          <div className="w-9 h-9 bg-primary rounded-lg flex items-center justify-center">
+            <span className="text-white text-sm font-bold">OR</span>
+          </div>
+          <span
+            className={cn(
+              "text-lg font-semibold",
+              isHome ? "text-white" : "text-gray-900"
+            )}
+          >
+            OnRez
+          </span>
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden md:flex items-center gap-1">
-          {navLinks.map(({ href, label, icon: Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-[14px] font-medium text-medium-text hover:bg-white/60 hover:text-dark-text transition-all duration-200"
-            >
-              <Icon className="h-4 w-4" />
-              {label}
-            </Link>
-          ))}
+        {/* Center — Frosted pill nav (desktop) */}
+        <nav className="hidden md:flex bg-white/70 backdrop-blur-md rounded-full px-2 py-1.5 shadow-sm border border-white/50">
+          <div className="flex items-center gap-1">
+            {navLinks.map(({ href, label, icon: Icon }) => {
+              const isActive =
+                href === "/"
+                  ? pathname === "/"
+                  : pathname.startsWith(href);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={cn(
+                    "flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200",
+                    isActive
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-white/50"
+                  )}
+                >
+                  <Icon className="w-4 h-4" />
+                  {label}
+                </Link>
+              );
+            })}
+          </div>
         </nav>
 
-        {/* Desktop auth */}
+        {/* Right — Auth / User menu (desktop) */}
         <div className="hidden md:flex items-center gap-3">
           {user ? (
             <div className="relative" ref={dropdownRef}>
               <button
                 type="button"
-                onClick={() => setDropdownOpen((o) => !o)}
-                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-dark-text hover:bg-white/60 transition-all"
+                onClick={() => setMenuOpen((o) => !o)}
+                className="flex items-center gap-2 bg-white/70 backdrop-blur-md rounded-full pl-1.5 pr-3 py-1.5 shadow-sm border border-white/50 hover:bg-white/90 transition-colors"
               >
                 {profile?.avatar_url ? (
                   <img
                     src={profile.avatar_url}
                     alt=""
-                    className="h-8 w-8 rounded-full object-cover"
+                    className="w-7 h-7 rounded-full object-cover"
                   />
                 ) : (
-                  <div
-                    className="h-8 w-8 rounded-full flex items-center justify-center text-white text-sm font-semibold"
-                    style={{ backgroundColor: "#3B5BDB" }}
-                  >
-                    {displayName.slice(0, 1).toUpperCase()}
+                  <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">{initials}</span>
                   </div>
                 )}
-                <span>{displayName}</span>
-                <ChevronDown className="h-4 w-4" />
+                <span className="text-sm font-medium text-gray-700">{displayName}</span>
+                <ChevronDown className="w-4 h-4 text-gray-400" />
               </button>
-              {dropdownOpen && (
-                <div className="absolute right-0 mt-1 w-52 rounded-lg border border-border bg-white shadow-lg py-1 z-50">
+              {menuOpen && (
+                <div className="absolute right-0 top-full mt-2 w-56 bg-white/80 backdrop-blur-lg rounded-xl shadow-lg border border-white/50 py-2 z-50">
                   <Link
                     href="/bookmarks"
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-dark-text hover:bg-gray-50"
-                    onClick={() => setDropdownOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100/80"
+                    onClick={() => setMenuOpen(false)}
                   >
                     <Bookmark className="h-4 w-4" />
                     My Bookmarks
                   </Link>
                   <Link
                     href="/my-listings"
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-dark-text hover:bg-gray-50"
-                    onClick={() => setDropdownOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100/80"
+                    onClick={() => setMenuOpen(false)}
                   >
                     <List className="h-4 w-4" />
                     My Listings
                   </Link>
                   <Link
                     href="/listing/new"
-                    className="flex items-center gap-2 px-4 py-2 text-sm text-dark-text hover:bg-gray-50"
-                    onClick={() => setDropdownOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100/80"
+                    onClick={() => setMenuOpen(false)}
                   >
                     <PlusCircle className="h-4 w-4" />
                     Post a Listing
                   </Link>
-                  <hr className="my-1 border-border" />
+                  <hr className="my-2 border-gray-200" />
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="flex w-full items-center gap-2 px-4 py-2 text-sm text-dark-text hover:bg-gray-50"
+                    className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg"
                   >
                     <LogOut className="h-4 w-4" />
-                    Log out
+                    Log Out
                   </button>
                 </div>
               )}
@@ -148,17 +172,16 @@ export function Navbar({ user, profile }: NavbarProps) {
             <>
               <Link
                 href="/auth/login"
-                className="text-sm font-medium text-medium-text hover:text-primary transition-colors"
+                className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
               >
                 Log in
               </Link>
-              <Button
-                asChild
-                className="rounded-lg text-white font-medium"
-                style={{ backgroundColor: "#3B5BDB" }}
+              <Link
+                href="/auth/signup"
+                className="bg-primary text-white text-sm font-medium px-5 py-2 rounded-full hover:bg-primary/90 transition-colors"
               >
-                <Link href="/auth/signup">Sign up</Link>
-              </Button>
+                Sign up
+              </Link>
             </>
           )}
         </div>
@@ -166,67 +189,99 @@ export function Navbar({ user, profile }: NavbarProps) {
         {/* Mobile menu button */}
         <button
           type="button"
-          className="md:hidden flex h-10 w-10 items-center justify-center rounded-lg text-medium-text hover:bg-white/60"
+          className={cn(
+            "md:hidden flex h-10 w-10 items-center justify-center rounded-full hover:bg-white/30",
+            isHome ? "text-white" : "text-gray-700"
+          )}
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label="Toggle menu"
         >
-          {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          <Menu className="h-6 w-6" />
         </button>
       </div>
 
-      {/* Mobile nav */}
-      <div
-        className={cn(
-          "md:hidden border-t border-border/60 bg-white/95 backdrop-blur",
-          mobileOpen ? "block" : "hidden"
-        )}
-      >
-        <nav className="flex flex-col px-4 py-3 gap-1">
-          {navLinks.map(({ href, label, icon: Icon }) => (
-            <Link
-              key={href}
-              href={href}
-              onClick={() => setMobileOpen(false)}
-              className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-[15px] font-medium text-dark-text hover:bg-gray-100"
-            >
-              <Icon className="h-4 w-4" />
-              {label}
-            </Link>
-          ))}
-          <div className="mt-2 flex flex-col gap-1 border-t border-border pt-3">
-            {user ? (
-              <>
-                <Link href="/bookmarks" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2.5 text-[15px] font-medium text-dark-text hover:bg-gray-100">
-                  My Bookmarks
-                </Link>
-                <Link href="/my-listings" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2.5 text-[15px] font-medium text-dark-text hover:bg-gray-100">
-                  My Listings
-                </Link>
-                <Link href="/listing/new" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2.5 text-[15px] font-medium text-dark-text hover:bg-gray-100">
-                  Post a Listing
-                </Link>
-                <button type="button" onClick={() => { handleLogout(); setMobileOpen(false); }} className="rounded-lg px-3 py-2.5 text-[15px] font-medium text-left text-dark-text hover:bg-gray-100">
-                  Log out
-                </button>
-              </>
-            ) : (
-              <>
-                <Link href="/auth/login" onClick={() => setMobileOpen(false)} className="rounded-lg px-3 py-2.5 text-[15px] font-medium text-dark-text hover:bg-gray-100">
-                  Log in
-                </Link>
+      {/* Mobile dropdown */}
+      {mobileOpen && (
+        <div className="md:hidden absolute top-full left-4 right-4 mt-2 bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg border border-white/50 p-4 z-50">
+          <nav className="flex flex-col gap-2">
+            {navLinks.map(({ href, label, icon: Icon }) => {
+              const isActive =
+                href === "/" ? pathname === "/" : pathname.startsWith(href);
+              return (
                 <Link
-                  href="/auth/signup"
+                  key={href}
+                  href={href}
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-center rounded-lg bg-primary py-2.5 text-[15px] font-medium text-white"
-                  style={{ backgroundColor: "#3B5BDB" }}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-colors",
+                    isActive ? "bg-white text-gray-900 shadow-sm" : "text-gray-700 hover:bg-white/60"
+                  )}
                 >
-                  Sign up
+                  <Icon className="h-4 w-4" />
+                  {label}
                 </Link>
-              </>
-            )}
-          </div>
-        </nav>
-      </div>
+              );
+            })}
+          </nav>
+          <hr className="my-3 border-gray-200" />
+          {user ? (
+            <>
+              <Link
+                href="/bookmarks"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium text-gray-700 hover:bg-white/60"
+              >
+                <Bookmark className="h-4 w-4" />
+                My Bookmarks
+              </Link>
+              <Link
+                href="/my-listings"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium text-gray-700 hover:bg-white/60"
+              >
+                <List className="h-4 w-4" />
+                My Listings
+              </Link>
+              <Link
+                href="/listing/new"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium text-gray-700 hover:bg-white/60"
+              >
+                <PlusCircle className="h-4 w-4" />
+                Post a Listing
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  handleLogout();
+                  setMobileOpen(false);
+                }}
+                className="w-full flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 text-left"
+              >
+                <LogOut className="h-4 w-4" />
+                Log out
+              </button>
+            </>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <Link
+                href="/auth/login"
+                onClick={() => setMobileOpen(false)}
+                className="px-4 py-3 rounded-xl text-sm font-medium text-gray-700 hover:bg-white/60 text-center"
+              >
+                Log in
+              </Link>
+              <Link
+                href="/auth/signup"
+                onClick={() => setMobileOpen(false)}
+                className="px-4 py-3 rounded-full text-sm font-medium text-white bg-primary hover:bg-primary/90 text-center"
+              >
+                Sign up
+              </Link>
+            </div>
+          )}
+        </div>
+      )}
     </header>
   );
 }

@@ -6,7 +6,7 @@ import type { Listing, UniversityReview } from "@/types";
 import { UniversityHero } from "@/components/university/UniversityHero";
 import { ListingGrid } from "@/components/listings/ListingGrid";
 import { UniversityReviewSection } from "@/components/university/UniversityReviewSection";
-import { formatPrice } from "@/lib/utils";
+import { formatPrice, pluralize } from "@/lib/utils";
 import { UniversityMapSection } from "@/components/university/UniversityMapSection";
 import { StarRatingDisplay } from "@/components/listings/StarRatingDisplay";
 
@@ -92,7 +92,7 @@ export default async function UniversityPage({
             </p>
           </div>
           <div className="bg-white rounded-xl shadow-sm border border-border p-5">
-            <p className="text-sm text-medium-text">Listings</p>
+            <p className="text-sm text-medium-text">{pluralize(allListings.length, "Listing")}</p>
             <p className="text-2xl font-bold text-dark-text mt-1">
               {allListings.length}
             </p>
@@ -125,7 +125,7 @@ export default async function UniversityPage({
           </div>
           {hasMore && (
             <p className="mt-6 text-center text-medium-text">
-              Showing first {INITIAL_LISTINGS} of {allListings.length}.{" "}
+              Showing first {INITIAL_LISTINGS} of {allListings.length} {pluralize(allListings.length, "listing")}.{" "}
               <Link href="/explore" className="text-primary font-medium hover:underline">
                 Explore all listings
               </Link>
