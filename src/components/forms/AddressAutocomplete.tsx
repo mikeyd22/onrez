@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState, useRef, useImperativeHandle, forwardRef } from "react";
 import usePlacesAutocomplete, {
   getGeocode,
   getLatLng,
@@ -12,24 +13,33 @@ export interface AddressResult {
   longitude: number;
 }
 
+export interface AddressAutocompleteRef {
+  getValue: () => string;
+}
+
 interface AddressAutocompleteProps {
   onSelect: (result: AddressResult) => void;
-  /** Called when the user types, so the parent can keep address in sync even if they don't pick a suggestion */
   onInputChange?: (value: string) => void;
+  value?: string;
   defaultValue?: string;
   placeholder?: string;
   id?: string;
   className?: string;
 }
 
-export function AddressAutocomplete({
-  onSelect,
-  onInputChange,
-  defaultValue = "",
-  placeholder = "Start typing an address...",
-  id,
-  className = "",
-}: AddressAutocompleteProps) {
+const AddressAutocompleteInner = forwardRef<AddressAutocompleteRef, AddressAutocompleteProps>(function AddressAutocompleteInner(
+  {
+    onSelect,
+    onInputChange,
+    value: controlledValue,
+    defaultValue = "",
+    placeholder = "Start typing an address...",
+    id,
+    className = "",
+  },
+  ref
+) {
+  const inputRef = useRef<HTMLInputElement>(null);
   const {
     ready,
     value,
@@ -41,10 +51,32 @@ export function AddressAutocomplete({
       componentRestrictions: { country: "ca" },
       types: ["address"],
     },
-    defaultValue,
+    defaultValue: controlledValue ?? defaultValue,
   });
 
+  const isControlled = controlledValue !== undefined;
+  const [justSelected, setJustSelected] = useState<string | null>(null);
+
+  const displayValue = (justSelected ?? (isControlled ? controlledValue : value)) ?? "";
+
+  useEffect(() => {
+    if (isControlled && controlledValue !== value) {
+      setValue(controlledValue, false);
+    }
+  }, [isControlled, controlledValue, setValue, value]);
+
+  useEffect(() => {
+    if (justSelected !== null && controlledValue === justSelected) {
+      setJustSelected(null);
+    }
+  }, [justSelected, controlledValue]);
+
+  useImperativeHandle(ref, () => ({
+    getValue: () => inputRef.current?.value?.trim() ?? "",
+  }), []);
+
   async function handleSelect(description: string) {
+    setJustSelected(description);
     setValue(description, false);
     clearSuggestions();
 
@@ -69,10 +101,12 @@ export function AddressAutocomplete({
   return (
     <div className="relative">
       <input
+        ref={inputRef}
         id={id}
-        value={value}
+        value={displayValue}
         onChange={(e) => {
           const v = e.target.value;
+          setJustSelected(null);
           setValue(v);
           onInputChange?.(v);
         }}
@@ -103,4 +137,6 @@ export function AddressAutocomplete({
       )}
     </div>
   );
-}
+});
+
+export const AddressAutocomplete = AddressAutocompleteInner;

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { listingRowToApi } from "@/lib/api-transform";
+import { geocodeAddress } from "@/lib/geocode";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -121,8 +122,14 @@ export async function POST(request: NextRequest) {
     if (!body.universitySlug?.trim()) {
       return NextResponse.json({ error: "Please select your university." }, { status: 400 });
     }
-    const lat = latitude != null ? Number(latitude) : 43.47;
-    const lng = longitude != null ? Number(longitude) : -80.54;
+
+    let lat = latitude != null ? Number(latitude) : 43.47;
+    let lng = longitude != null ? Number(longitude) : -80.54;
+    const geocoded = await geocodeAddress(address.trim());
+    if (geocoded) {
+      lat = geocoded.latitude;
+      lng = geocoded.longitude;
+    }
 
     let universityId: string | null = null;
     if (universitySlug) {
@@ -133,7 +140,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Please select your university." }, { status: 400 });
     }
 
-    const listingTitle = title ?? address;
+    const listingTitle = address?.trim() ? address.trim() : (title ?? address);
 
     const { data: listing, error: insertError } = await supabase
       .from("listings")

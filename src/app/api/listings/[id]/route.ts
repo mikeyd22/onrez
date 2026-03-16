@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { isAdmin } from "@/lib/auth";
 import { listingRowToApi } from "@/lib/api-transform";
+import { geocodeAddress } from "@/lib/geocode";
 
 export async function GET(
   _request: NextRequest,
@@ -65,6 +66,15 @@ export async function PUT(
     if (body.universitySlug && !body.universityId) {
       const { data: uni } = await supabase.from("universities").select("id").eq("slug", body.universitySlug).single();
       if (uni) update.university_id = uni.id;
+    }
+    const addressStr = (update.address as string) ?? body.address;
+    if (typeof addressStr === "string" && addressStr.trim()) {
+      update.title = addressStr.trim();
+      const geocoded = await geocodeAddress(addressStr.trim());
+      if (geocoded) {
+        update.latitude = geocoded.latitude;
+        update.longitude = geocoded.longitude;
+      }
     }
     update.updated_at = new Date().toISOString();
 

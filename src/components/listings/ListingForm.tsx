@@ -1,14 +1,13 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { LoadScript } from "@react-google-maps/api";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { AddressAutocomplete } from "@/components/forms/AddressAutocomplete";
+import { AddressAutocomplete, type AddressAutocompleteRef } from "@/components/forms/AddressAutocomplete";
 import type { PropertyType } from "@/types";
 
 const PROPERTY_TYPES: { value: PropertyType; label: string }[] = [
@@ -46,7 +45,33 @@ const MONTHS = [
   "July", "August", "September", "October", "November", "December",
 ];
 
-const GOOGLE_MAPS_LIBRARIES: ("places")[] = ["places"];
+const GOOGLE_MAPS_SCRIPT_ID = "google-maps-places-script";
+
+/** Load Google Maps Places script in the background so the form can show immediately. */
+function useGoogleMapsScript() {
+  const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
+  const [ready, setReady] = useState(false);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    if (!key) return;
+    const existing = document.getElementById(GOOGLE_MAPS_SCRIPT_ID);
+    if (existing) {
+      setReady(!!(typeof window !== "undefined" && window.google?.maps?.places));
+      return;
+    }
+    const script = document.createElement("script");
+    script.id = GOOGLE_MAPS_SCRIPT_ID;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places`;
+    script.async = true;
+    script.defer = true;
+    script.onload = () => setReady(true);
+    script.onerror = () => setError(true);
+    document.head.appendChild(script);
+  }, [key]);
+
+  return { ready, error, hasKey: !!key };
+}
 
 interface UniversityOption {
   id: string;
@@ -111,6 +136,7 @@ function ListingFormInner({ universities, useAddressAutocomplete = true, existin
   const [universityId, setUniversityId] = useState((initialUniversityId || existingListing?.university_id) ?? "");
   const [photos, setPhotos] = useState<File[]>([]);
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
+  const addressInputRef = useRef<AddressAutocompleteRef>(null);
 
   const handleAddressSelect = useCallback(
     (result: { address: string; city: string; latitude: number; longitude: number }) => {
@@ -134,7 +160,8 @@ function ListingFormInner({ universities, useAddressAutocomplete = true, existin
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!address?.trim()) {
+    const addressFromInput = addressInputRef.current?.getValue() ?? address.trim();
+    if (!addressFromInput?.trim()) {
       setError("Address is required.");
       return;
     }
@@ -167,10 +194,12 @@ function ListingFormInner({ universities, useAddressAutocomplete = true, existin
       }
 
       const universitySlug = universityId ? universities.find((u) => u.id === universityId)?.slug ?? null : null;
+      const addressFromInput = addressInputRef.current?.getValue() ?? address.trim();
+      const addressForSave = addressFromInput.trim();
       const payload = {
-        title: address,
+        title: addressForSave,
         description: description || null,
-        address,
+        address: addressForSave,
         city: city || null,
         latitude,
         longitude,
@@ -268,10 +297,11 @@ function ListingFormInner({ universities, useAddressAutocomplete = true, existin
         {useAddressAutocomplete ? (
           <div className="mt-1">
             <AddressAutocomplete
+              ref={addressInputRef}
               id="address"
+              value={address}
               onSelect={handleAddressSelect}
               onInputChange={(value) => setAddress(value)}
-              defaultValue={address}
               placeholder="Start typing an address..."
             />
           </div>
@@ -493,26 +523,17 @@ function ListingFormInner({ universities, useAddressAutocomplete = true, existin
 }
 
 export function ListingForm(props: ListingFormProps) {
-  const googleMapsKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ?? "";
-  const [scriptError, setScriptError] = useState(false);
-  const useAutocomplete = !!googleMapsKey && !scriptError;
-
-  if (!googleMapsKey || scriptError) {
-    return <ListingFormInner {...props} useAddressAutocomplete={false} />;
-  }
+  const { ready, error: scriptError, hasKey } = useGoogleMapsScript();
+  const useAutocomplete = hasKey && ready && !scriptError;
 
   return (
-    <LoadScript
-      googleMapsApiKey={googleMapsKey}
-      libraries={GOOGLE_MAPS_LIBRARIES}
-      loadingElement={
-        <div className="min-h-[200px] flex items-center justify-center text-medium-text">
-          Loading address search…
-        </div>
-      }
-      onError={() => setScriptError(true)}
-    >
+    <div className="relative">
       <ListingFormInner {...props} useAddressAutocomplete={useAutocomplete} />
-    </LoadScript>
+      {hasKey && !ready && !scriptError && (
+        <p className="mt-2 text-sm text-medium-text">
+          Address suggestions loading… you can type the address now; suggestions will appear when ready.
+        </p>
+      )}
+    </div>
   );
 }

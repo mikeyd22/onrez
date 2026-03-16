@@ -26,7 +26,7 @@ export default async function ListingPage({
 
   const { data: listingRow } = await supabase
     .from("listings")
-    .select("*, listing_photos(*), universities(name, slug)")
+    .select("*, listing_photos(*), universities(name, slug, latitude, longitude, logo_url)")
     .eq("id", id)
     .single();
 
@@ -42,7 +42,20 @@ export default async function ListingPage({
     ...(listingRow as Parameters<typeof listingRowToApi>[0]),
     review_photos: reviewPhotoRows ?? [],
   });
-  const universityName = (listingRow as { universities?: { name: string } | null }).universities?.name ?? null;
+  const universityRow = (listingRow as { universities?: { name: string; slug: string; latitude: number; longitude: number; logo_url: string | null } | null }).universities ?? null;
+  const universityName = universityRow?.name ?? null;
+  const universityForMap =
+    universityRow &&
+    typeof universityRow.latitude === "number" &&
+    typeof universityRow.longitude === "number"
+      ? {
+          name: universityRow.name,
+          slug: universityRow.slug,
+          latitude: universityRow.latitude,
+          longitude: universityRow.longitude,
+          logoUrl: universityRow.logo_url ?? undefined,
+        }
+      : undefined;
   const ownerId = (listingRow as { owner_id: string | null }).owner_id ?? null;
   const { data: { user } } = await supabase.auth.getUser();
   const isOwner = !!(user && ownerId && user.id === ownerId);
@@ -127,6 +140,7 @@ export default async function ListingPage({
               listing={listing}
               universityName={universityName ?? undefined}
               universitySlug={listing.universitySlug}
+              university={universityForMap}
             />
           </div>
         </div>

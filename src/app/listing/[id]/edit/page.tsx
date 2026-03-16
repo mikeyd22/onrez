@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { Suspense } from "react";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { ListingForm } from "@/components/listings/ListingForm";
 
@@ -54,10 +55,12 @@ export default async function EditListingPage({
         <p className="mt-2 text-medium-text">
           Update your listing details.
         </p>
-        <ListingForm
-          universities={universities ?? []}
-          existingListing={existingListing}
-        />
+        <Suspense fallback={<div className="mt-8 h-64 animate-pulse rounded-xl bg-gray-100" />}>
+          <ListingForm
+            universities={universities ?? []}
+            existingListing={existingListing}
+          />
+        </Suspense>
       </div>
     </div>
   );

@@ -51,9 +51,19 @@ export function UniversityMapSection({
   const restaurants = nearbyPlaces.food;
   const shops = nearbyPlaces.shops;
 
+  const listingsWithLocation = listings.filter(
+    (l) =>
+      typeof l.latitude === "number" &&
+      typeof l.longitude === "number" &&
+      (l.latitude !== 0 || l.longitude !== 0)
+  );
+
   return (
     <div className="rounded-xl overflow-hidden border border-border bg-white shadow-sm">
-      <div className="p-3 border-b border-border flex flex-wrap gap-2">
+      <div className="p-3 border-b border-border flex flex-wrap items-center justify-between gap-2">
+        <h2 className="text-lg font-semibold text-dark-text">
+          Map — listing locations
+        </h2>
         <MapControls
           transit={showTransit}
           food={showFood}
@@ -65,7 +75,7 @@ export function UniversityMapSection({
       </div>
       <div className="h-[400px] w-full">
         <MapViewDynamic
-          listings={listings}
+          listings={listingsWithLocation}
           universities={[university]}
           busStops={busStops}
           restaurants={restaurants}
