@@ -1,8 +1,12 @@
 "use client";
 
-import { useRef } from "react";
+import { useState } from "react";
 import { UniversityReviewCard } from "./UniversityReviewCard";
 import { UniversityReviewForm } from "./UniversityReviewForm";
+import {
+  Dialog,
+  DialogContent,
+} from "@/components/ui/dialog";
 import type { UniversityReview } from "@/types";
 
 interface UniversityReviewSectionProps {
@@ -20,10 +24,11 @@ export function UniversityReviewSection({
   userReview,
   isLoggedIn,
 }: UniversityReviewSectionProps) {
-  const formRef = useRef<HTMLDivElement>(null);
+  const [formOpen, setFormOpen] = useState(false);
 
-  const scrollToForm = () => {
-    formRef.current?.scrollIntoView({ behavior: "smooth" });
+  const handleReviewSubmitted = () => {
+    setFormOpen(false);
+    window.location.reload();
   };
 
   return (
@@ -34,7 +39,7 @@ export function UniversityReviewSection({
         </h2>
         <button
           type="button"
-          onClick={scrollToForm}
+          onClick={() => setFormOpen(true)}
           className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 transition-colors"
         >
           {userReview ? "Edit Your Review" : "+ Add Your Review"}
@@ -48,15 +53,17 @@ export function UniversityReviewSection({
           <UniversityReviewCard key={review.id} review={review} />
         ))}
       </div>
-      <div ref={formRef} className="mt-8">
-        <UniversityReviewForm
-          universitySlug={universitySlug}
-          universityName={universityName}
-          existingReview={userReview}
-          isLoggedIn={isLoggedIn}
-          onReviewSubmitted={() => window.location.reload()}
-        />
-      </div>
+      <Dialog open={formOpen} onOpenChange={setFormOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <UniversityReviewForm
+            universitySlug={universitySlug}
+            universityName={universityName}
+            existingReview={userReview}
+            isLoggedIn={isLoggedIn}
+            onReviewSubmitted={handleReviewSubmitted}
+          />
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }
