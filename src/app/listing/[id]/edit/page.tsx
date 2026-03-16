@@ -30,7 +30,6 @@ export default async function EditListingPage({
   const existingListing = {
     id: row.id,
     title: row.title,
-    description: row.description,
     address: row.address,
     city: row.city ?? "",
     latitude: row.latitude,

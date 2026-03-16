@@ -122,15 +122,6 @@ export function ListingDetail({
         </div>
       </div>
 
-      {listing.description && (
-        <div>
-          <h2 className="text-lg font-semibold text-dark-text mb-2">
-            Description
-          </h2>
-          <p className="text-medium-text leading-relaxed">{listing.description}</p>
-        </div>
-      )}
-
       <div>
         <h2 className="text-lg font-semibold text-dark-text mb-3">
           Amenities

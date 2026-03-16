@@ -3,11 +3,13 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { AddressAutocomplete, type AddressAutocompleteRef } from "@/components/forms/AddressAutocomplete";
+import { cn } from "@/lib/utils";
 import type { PropertyType } from "@/types";
 
 const PROPERTY_TYPES: { value: PropertyType; label: string }[] = [
@@ -86,7 +88,6 @@ interface ListingFormProps {
   existingListing?: {
     id: string;
     title: string | null;
-    description: string | null;
     address: string;
     city: string;
     latitude: number;
@@ -116,7 +117,6 @@ function ListingFormInner({ universities, useAddressAutocomplete = true, existin
     ? universities.find((u) => u.slug === initialUniversitySlug)?.id ?? ""
     : existingListing?.university_id ?? "";
 
-  const [description, setDescription] = useState(existingListing?.description ?? "");
   const [address, setAddress] = useState(existingListing?.address ?? "");
   const [city, setCity] = useState(existingListing?.city ?? ""); // from address autocomplete only; not shown as separate field
   const [latitude, setLatitude] = useState(existingListing?.latitude ?? 43.47);
@@ -136,6 +136,8 @@ function ListingFormInner({ universities, useAddressAutocomplete = true, existin
   const [universityId, setUniversityId] = useState((initialUniversityId || existingListing?.university_id) ?? "");
   const [photos, setPhotos] = useState<File[]>([]);
   const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
+  const [initialReviewRating, setInitialReviewRating] = useState(0);
+  const [initialReviewComment, setInitialReviewComment] = useState("");
   const addressInputRef = useRef<AddressAutocompleteRef>(null);
 
   const handleAddressSelect = useCallback(
@@ -198,7 +200,6 @@ function ListingFormInner({ universities, useAddressAutocomplete = true, existin
       const addressForSave = addressFromInput.trim();
       const payload = {
         title: addressForSave,
-        description: description || null,
         address: addressForSave,
         city: city || null,
         latitude,
@@ -225,10 +226,18 @@ function ListingFormInner({ universities, useAddressAutocomplete = true, existin
         router.push(`/listing/${existingListing.id}`);
         router.refresh();
       } else {
+        const initialReview =
+          initialReviewRating >= 1 && initialReviewRating <= 5
+            ? { rating: initialReviewRating, comment: initialReviewComment.trim() || undefined }
+            : undefined;
         const res = await fetch("/api/listings", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...payload, imageUrls: [] }),
+          body: JSON.stringify({
+            ...payload,
+            imageUrls: [],
+            ...(initialReview && { initialReview }),
+          }),
         });
         const data = await res.json();
         if (data.error) throw new Error(data.error);
@@ -315,18 +324,6 @@ function ListingFormInner({ universities, useAddressAutocomplete = true, existin
             placeholder="Street address"
           />
         )}
-      </div>
-
-      <div>
-        <Label htmlFor="description">Description (optional)</Label>
-        <Textarea
-          id="description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={4}
-          placeholder="Describe the place — what's it like living here?"
-          className="mt-1"
-        />
       </div>
 
       <div>
@@ -483,7 +480,38 @@ function ListingFormInner({ universities, useAddressAutocomplete = true, existin
       </div>
 
       {!existingListing && (
-        <div>
+        <>
+          <div className="rounded-lg border border-border bg-gray-50/50 p-4">
+            <p className="text-sm font-medium text-dark-text mb-2">
+              Your review (optional) — it will appear on the listing
+            </p>
+            <div className="flex gap-1 mb-3">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <button
+                  key={i}
+                  type="button"
+                  className="p-1"
+                  onClick={() => setInitialReviewRating(i)}
+                  aria-label={`${i} stars`}
+                >
+                  <Star
+                    className={cn(
+                      "h-7 w-7 transition-colors",
+                      initialReviewRating >= i ? "fill-star-yellow text-star-yellow" : "text-gray-200"
+                    )}
+                  />
+                </button>
+              ))}
+            </div>
+            <Textarea
+              placeholder="Share your experience at this place... (optional)"
+              value={initialReviewComment}
+              onChange={(e) => setInitialReviewComment(e.target.value)}
+              rows={3}
+              className="resize-none bg-white"
+            />
+          </div>
+          <div>
           <Label>Photos (optional, max 10)</Label>
           <Input
             type="file"
@@ -512,7 +540,8 @@ function ListingFormInner({ universities, useAddressAutocomplete = true, existin
               ))}
             </div>
           )}
-        </div>
+          </div>
+        </>
       )}
 
       <Button type="submit" disabled={loading} className="w-full">

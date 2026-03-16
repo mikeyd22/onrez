@@ -42,7 +42,8 @@ export interface Listing {
   avgRating?: number;
   reviewCount?: number;
   availableFrom: string;
-  description: string;
+  /** Deprecated: listings use reviews instead; kept for DB compatibility. */
+  description?: string;
   residencyStatus?: ResidencyStatus | null;
   lastStayedMonth?: number | null;
   lastStayedYear?: number | null;

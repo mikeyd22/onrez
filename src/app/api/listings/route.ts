@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { listingRowToApi } from "@/lib/api-transform";
 import { geocodeAddress } from "@/lib/geocode";
+import { getRandomAvatar } from "@/lib/utils";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest) {
 
     if (q?.trim()) {
       const term = q.trim().replace(/%/g, "\\%");
-      query = query.or(`title.ilike.%${term}%,address.ilike.%${term}%,description.ilike.%${term}%,city.ilike.%${term}%`);
+      query = query.or(`title.ilike.%${term}%,address.ilike.%${term}%,city.ilike.%${term}%`);
     }
     if (university) {
       const { data: uni } = await supabase.from("universities").select("id").eq("slug", university).single();
@@ -87,7 +88,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const {
       title,
-      description,
       address,
       city,
       latitude,
@@ -102,6 +102,7 @@ export async function POST(request: NextRequest) {
       residencyStatus,
       lastStayedMonth,
       lastStayedYear,
+      initialReview,
     } = body;
 
     if (!address?.trim()) {
@@ -146,7 +147,6 @@ export async function POST(request: NextRequest) {
       .from("listings")
       .insert({
         title: listingTitle,
-        description: description ?? null,
         address,
         city: city?.trim() || null,
         latitude: lat,
@@ -178,6 +178,18 @@ export async function POST(request: NextRequest) {
           display_order: i,
         }))
       );
+    }
+
+    const rating = initialReview?.rating != null ? Number(initialReview.rating) : 0;
+    if (rating >= 1 && rating <= 5) {
+      await supabase.from("reviews").insert({
+        listing_id: listing.id,
+        user_id: user.id,
+        rating,
+        comment: (initialReview?.comment && String(initialReview.comment).trim()) || null,
+        avatar_icon: getRandomAvatar(),
+        updated_at: new Date().toISOString(),
+      });
     }
 
     return NextResponse.json({ id: listing.id });

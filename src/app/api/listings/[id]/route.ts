@@ -54,7 +54,7 @@ export async function PUT(
     const body = await request.json();
     const update: Record<string, unknown> = {};
     const allowed = [
-      "title", "description", "address", "city", "latitude", "longitude",
+      "title", "address", "city", "latitude", "longitude",
       "price_per_month", "bedrooms", "bathrooms", "property_type", "amenities",
       "available_from", "available_to", "university_id", "is_active",
       "residency_status", "last_stayed_month", "last_stayed_year",

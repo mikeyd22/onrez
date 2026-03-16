@@ -24,7 +24,7 @@ export default async function ExplorePage({
   if (q.trim()) {
     const term = q.trim().replace(/%/g, "\\%");
     query = query.or(
-      `title.ilike.%${term}%,address.ilike.%${term}%,description.ilike.%${term}%,city.ilike.%${term}%`
+      `title.ilike.%${term}%,address.ilike.%${term}%,city.ilike.%${term}%`
     );
   }
   if (universitySlug) {
