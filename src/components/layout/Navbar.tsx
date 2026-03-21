@@ -60,29 +60,34 @@ export function Navbar({ user, profile }: NavbarProps) {
   const displayName = profile?.display_name || user?.email?.split("@")[0] || "Account";
   const initials = displayName.slice(0, 2).toUpperCase();
   const isHome = pathname === "/";
+  const isMapPage = pathname === "/map";
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 px-6 py-3">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
-        {/* Left — Logo + OnRez (same glass pill as menu bar, aligned on same line) */}
-        <Link
-          href="/"
-          className="flex items-center gap-1.5 shrink-0 bg-white/70 backdrop-blur-md rounded-full pl-2.5 pr-4 py-2 -translate-y-0.5 shadow-sm border border-white/50 hover:bg-white/90 transition-colors"
-        >
-          <Image
-            src="/web-app-manifest-192x192.png"
-            alt="OnRez"
-            width={20}
-            height={20}
-            className="w-5 h-5 rounded-lg object-contain shrink-0"
-          />
-          <span className="text-sm font-medium text-gray-900">
-            OnRez
-          </span>
-        </Link>
+      <div className="max-w-7xl mx-auto flex items-center">
+        {/* Left — Logo + OnRez (hidden on /map) */}
+        <div className="flex-1 flex justify-start min-w-0">
+          {!isMapPage && (
+            <Link
+              href="/"
+              className="flex items-center gap-1.5 shrink-0 bg-white/70 backdrop-blur-md rounded-full pl-2.5 pr-4 py-2 -translate-y-0.5 shadow-sm border border-white/50 hover:bg-white/90 transition-colors"
+            >
+              <Image
+                src="/web-app-manifest-192x192.png"
+                alt="OnRez"
+                width={20}
+                height={20}
+                className="w-5 h-5 rounded-lg object-contain shrink-0"
+              />
+              <span className="text-sm font-medium text-gray-900">
+                OnRez
+              </span>
+            </Link>
+          )}
+        </div>
 
         {/* Center — Frosted pill nav (desktop) */}
-        <nav className="hidden md:flex bg-white/70 backdrop-blur-md rounded-full px-2 py-1.5 shadow-sm border border-white/50">
+        <nav className="hidden md:flex shrink-0 bg-white/70 backdrop-blur-md rounded-full px-2 py-1.5 shadow-sm border border-white/50">
           <div className="flex items-center gap-1">
             {navLinks.map(({ href, label, icon: Icon }) => {
               const isActive =
@@ -108,8 +113,9 @@ export function Navbar({ user, profile }: NavbarProps) {
           </div>
         </nav>
 
-        {/* Right — Auth / User menu (desktop) */}
-        <div className="hidden md:flex items-center gap-3">
+        {/* Right — Auth / User menu (desktop) + mobile menu */}
+        <div className="flex-1 flex justify-end items-center gap-3 min-w-0">
+          <div className="hidden md:flex items-center gap-3">
           {user ? (
             <div className="relative" ref={dropdownRef}>
               <button
@@ -177,7 +183,7 @@ export function Navbar({ user, profile }: NavbarProps) {
                 </div>
               )}
             </div>
-          ) : (
+          ) : !isMapPage ? (
             <div className="flex items-center gap-0.5 bg-white/70 backdrop-blur-md rounded-full px-[calc(0.375rem-1.5px)] py-[calc(0.25rem-1.5px)] shadow-sm border border-white/50">
               <Link
                 href="/auth/login"
@@ -192,14 +198,13 @@ export function Navbar({ user, profile }: NavbarProps) {
                 Sign up
               </Link>
             </div>
-          )}
-        </div>
+          ) : null}
+          </div>
 
-        {/* Mobile menu button */}
         <button
           type="button"
           className={cn(
-            "md:hidden flex h-10 w-10 items-center justify-center rounded-full hover:bg-white/30",
+            "md:hidden flex h-10 w-10 items-center justify-center rounded-full hover:bg-white/30 shrink-0",
             isHome ? "text-white" : "text-gray-700"
           )}
           onClick={() => setMobileOpen(!mobileOpen)}
@@ -207,6 +212,7 @@ export function Navbar({ user, profile }: NavbarProps) {
         >
           <Menu className="h-6 w-6" />
         </button>
+        </div>
       </div>
 
       {/* Mobile dropdown */}
@@ -232,7 +238,7 @@ export function Navbar({ user, profile }: NavbarProps) {
               );
             })}
           </nav>
-          <hr className="my-3 border-gray-200" />
+          {(user || !isMapPage) && <hr className="my-3 border-gray-200" />}
           {user ? (
             <>
               <Link
@@ -279,7 +285,7 @@ export function Navbar({ user, profile }: NavbarProps) {
                 Log out
               </button>
             </>
-          ) : (
+          ) : !isMapPage ? (
             <div className="flex flex-col gap-2">
               <Link
                 href="/auth/login"
@@ -296,7 +302,7 @@ export function Navbar({ user, profile }: NavbarProps) {
                 Sign up
               </Link>
             </div>
-          )}
+          ) : null}
         </div>
       )}
     </header>

@@ -58,3 +58,11 @@
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* Full-screen /map: zoom + compass bottom-right with clear inset; sit above listings carousel (z-10). */
+.map-page-viewport .mapboxgl-ctrl-bottom-right {
+  z-index: 20;
+}
+.map-page-viewport .mapboxgl-ctrl-bottom-right > .mapboxgl-ctrl-group {
+  margin: 0 16px 16px 0;
+}

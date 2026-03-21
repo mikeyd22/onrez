@@ -126,7 +126,7 @@ const MapViewInner = forwardRef<MapViewHandle, MapViewProps>(function MapViewInn
       style={{ width: "100%", height: "100%" }}
       mapStyle="mapbox://styles/mapbox/light-v11"
     >
-      <NavigationControl position="top-right" />
+      <NavigationControl position="bottom-right" />
       {universities.map((u) => (
         <Marker
           key={u.id}

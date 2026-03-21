@@ -171,8 +171,8 @@ function MapPageContent() {
   const showCarousel = zoom >= 12 && filteredListings.length > 0;
 
   return (
-    <div className="relative w-full h-[calc(100vh-3.5rem)] flex flex-col">
-      <div className="absolute top-4 left-4 z-10 flex flex-col gap-3">
+    <div className="relative w-full h-screen -mt-[72px] flex flex-col">
+      <div className="absolute top-[calc(72px+1rem)] left-[calc(1rem+10px)] z-10 flex flex-col gap-3">
         <SchoolFilter
           universities={universities}
           value={schoolSlug}
@@ -213,7 +213,7 @@ function MapPageContent() {
         />
       </div>
 
-      <div className="flex-1 min-h-0 relative">
+      <div className="map-page-viewport flex-1 min-h-0 relative">
         <MapViewDynamic
           forwardedRef={mapRef}
           listings={filteredListings}
@@ -260,7 +260,7 @@ export default function MapPage() {
   return (
     <Suspense
       fallback={
-        <div className="h-[calc(100vh-3.5rem)] flex items-center justify-center">
+        <div className="h-screen -mt-[72px] flex items-center justify-center pt-[72px]">
           Loading...
         </div>
       }
