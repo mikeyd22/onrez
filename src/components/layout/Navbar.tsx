@@ -178,20 +178,20 @@ export function Navbar({ user, profile }: NavbarProps) {
               )}
             </div>
           ) : (
-            <>
+            <div className="flex items-center gap-0.5 bg-white/70 backdrop-blur-md rounded-full px-[calc(0.375rem-1.5px)] py-[calc(0.25rem-1.5px)] shadow-sm border border-white/50">
               <Link
                 href="/auth/login"
-                className="text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
+                className="px-[calc(1rem-4px)] py-[calc(0.5rem-1.5px)] rounded-full text-sm font-medium text-gray-600 transition-all duration-200 hover:text-gray-900 hover:bg-white/50"
               >
                 Log in
               </Link>
               <Link
                 href="/auth/signup"
-                className="bg-primary text-white text-sm font-medium px-5 py-2 rounded-full hover:bg-primary/90 transition-colors"
+                className="px-[calc(1rem-4px)] py-[calc(0.5rem-1.5px)] rounded-full text-sm font-medium text-gray-600 transition-all duration-200 hover:text-gray-900 hover:bg-white/50"
               >
                 Sign up
               </Link>
-            </>
+            </div>
           )}
         </div>
 
