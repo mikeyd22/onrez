@@ -11,9 +11,11 @@ interface ListingMarkerProps {
   price: number;
   selected: boolean;
   listing: Listing;
+  /** Clear selection when clicking the preview (not on a link/button). */
+  onDeselect?: () => void;
 }
 
-export function ListingMarker({ price, selected, listing }: ListingMarkerProps) {
+export function ListingMarker({ price, selected, listing, onDeselect }: ListingMarkerProps) {
   return (
     <div className="relative group">
       <div
@@ -27,7 +29,15 @@ export function ListingMarker({ price, selected, listing }: ListingMarkerProps) 
         {formatPrice(price)}
       </div>
       {selected && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 bg-white rounded-xl shadow-lg border border-border overflow-hidden z-50">
+        <div
+          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 bg-white rounded-xl shadow-lg border border-border overflow-hidden z-50"
+          onClick={(e) => {
+            e.stopPropagation();
+            const el = e.target as HTMLElement;
+            if (el.closest("a, button, [role='button']")) return;
+            onDeselect?.();
+          }}
+        >
           <div className="relative h-28 w-full bg-gray-100">
             <Image
               src={listing.images[0] ?? "https://placehold.co/400x200"}

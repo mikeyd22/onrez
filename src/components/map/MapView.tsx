@@ -104,6 +104,10 @@ const MapViewInner = forwardRef<MapViewHandle, MapViewProps>(function MapViewInn
     onViewportChange({ lat: c.lat, lng: c.lng }, map.getZoom());
   }, [onViewportChange]);
 
+  const handleMapClick = useCallback(() => {
+    onSelectListing(null);
+  }, [onSelectListing]);
+
   if (!MAPBOX_TOKEN) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-gray-100 rounded-lg text-medium-text">
@@ -118,6 +122,7 @@ const MapViewInner = forwardRef<MapViewHandle, MapViewProps>(function MapViewInn
       mapboxAccessToken={MAPBOX_TOKEN}
       initialViewState={initialViewState}
       onMove={handleMove}
+      onClick={handleMapClick}
       style={{ width: "100%", height: "100%" }}
       mapStyle="mapbox://styles/mapbox/light-v11"
     >
@@ -131,6 +136,7 @@ const MapViewInner = forwardRef<MapViewHandle, MapViewProps>(function MapViewInn
           style={{ zIndex: 5 }}
           onClick={(e) => {
             e.originalEvent.stopPropagation();
+            onSelectListing(null);
             const map = mapRef.current?.getMap();
             if (map) map.flyTo({ center: [u.longitude, u.latitude], zoom: 14, duration: 1500, essential: true });
             onUniversityClick?.(u);
@@ -174,6 +180,7 @@ const MapViewInner = forwardRef<MapViewHandle, MapViewProps>(function MapViewInn
             price={listing.pricePerMonth}
             selected={selectedListingId === listing.id}
             listing={listing}
+            onDeselect={() => onSelectListing(null)}
           />
         </Marker>
       ))}
@@ -184,6 +191,10 @@ const MapViewInner = forwardRef<MapViewHandle, MapViewProps>(function MapViewInn
             longitude={p.longitude}
             latitude={p.latitude}
             anchor="center"
+            onClick={(e) => {
+              e.originalEvent.stopPropagation();
+              onSelectListing(null);
+            }}
           >
             <div className="w-2 h-2 rounded-full bg-primary" />
           </Marker>
@@ -195,6 +206,10 @@ const MapViewInner = forwardRef<MapViewHandle, MapViewProps>(function MapViewInn
             longitude={p.longitude}
             latitude={p.latitude}
             anchor="center"
+            onClick={(e) => {
+              e.originalEvent.stopPropagation();
+              onSelectListing(null);
+            }}
           >
             <div className="w-2 h-2 rounded-full bg-orange-500" />
           </Marker>
@@ -206,6 +221,10 @@ const MapViewInner = forwardRef<MapViewHandle, MapViewProps>(function MapViewInn
             longitude={p.longitude}
             latitude={p.latitude}
             anchor="center"
+            onClick={(e) => {
+              e.originalEvent.stopPropagation();
+              onSelectListing(null);
+            }}
           >
             <div className="w-2 h-2 rounded-full bg-purple-500" />
           </Marker>
