@@ -105,27 +105,29 @@ export function ReviewForm({
       const reviewId = data.id as string;
 
       for (const photoId of photosToDelete) {
-        await supabase.from("review_photos").delete().eq("id", photoId);
+        const { error: delErr } = await supabase
+          .from("review_photos")
+          .delete()
+          .eq("id", photoId);
+        if (delErr) throw new Error(delErr.message);
       }
 
-      for (let i = 0; i < photos.length; i++) {
-        const file = photos[i];
-        const filePath = `reviews/${user.id}/${reviewId}/${Date.now()}_${file.name}`;
-        const { error: uploadError } = await supabase.storage
-          .from("listing-photos")
-          .upload(filePath, file);
-
-        if (!uploadError) {
-          const { data: { publicUrl } } = supabase.storage
-            .from("listing-photos")
-            .getPublicUrl(filePath);
-          await supabase.from("review_photos").insert({
-            review_id: reviewId,
-            listing_id: listingId,
-            user_id: user.id,
-            url: publicUrl,
-            display_order: keptExisting.length + i,
-          });
+      if (photos.length > 0) {
+        const formData = new FormData();
+        for (const file of photos) {
+          formData.append("files", file);
+        }
+        const uploadRes = await fetch(
+          `/api/upload?listing_id=${encodeURIComponent(listingId)}&review_id=${encodeURIComponent(reviewId)}`,
+          { method: "POST", body: formData }
+        );
+        const uploadData = await uploadRes.json().catch(() => ({}));
+        if (!uploadRes.ok) {
+          throw new Error(
+            typeof uploadData.error === "string"
+              ? uploadData.error
+              : "Photo upload failed. Try JPEG or PNG, max 5MB each."
+          );
         }
       }
 

@@ -243,21 +243,25 @@ function ListingFormInner({ universities, useAddressAutocomplete = true, existin
         if (data.error) throw new Error(data.error);
         const listingId = data.id;
 
-        for (let i = 0; i < photos.length; i++) {
-          const file = photos[i];
-          const path = `${user.id}/${listingId}/${Date.now()}_${file.name}`;
-          const { error: uploadError } = await supabase.storage
-            .from("listing-photos")
-            .upload(path, file);
-          if (!uploadError) {
-            const { data: { publicUrl } } = supabase.storage
-              .from("listing-photos")
-              .getPublicUrl(path);
-            await supabase.from("listing_photos").insert({
-              listing_id: listingId,
-              url: publicUrl,
-              display_order: i,
-            });
+        if (photos.length > 0) {
+          const formData = new FormData();
+          for (const file of photos) {
+            formData.append("files", file);
+          }
+          const uploadRes = await fetch(
+            `/api/upload?listing_id=${encodeURIComponent(listingId)}`,
+            {
+              method: "POST",
+              body: formData,
+            }
+          );
+          const uploadData = await uploadRes.json().catch(() => ({}));
+          if (!uploadRes.ok) {
+            throw new Error(
+              typeof uploadData.error === "string"
+                ? uploadData.error
+                : "Photo upload failed. Try JPEG or PNG, max 5MB each."
+            );
           }
         }
 
