@@ -34,6 +34,7 @@ const AMENITY_OPTIONS = [
   "Dishwasher",
   "Balcony",
   "Basement",
+  "Shuttle bus included",
 ];
 
 const RESIDENCY_OPTIONS = [
@@ -353,9 +354,9 @@ function ListingFormInner({ universities, useAddressAutocomplete = true, existin
             onChange={(e) => setBedrooms(Number(e.target.value))}
             className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
           >
-            {[1, 2, 3, 4, 5].map((n) => (
+            {Array.from({ length: 8 }, (_, i) => i + 1).map((n) => (
               <option key={n} value={n}>
-                {n === 5 ? "5+" : n}
+                {n}
               </option>
             ))}
           </select>
@@ -368,9 +369,9 @@ function ListingFormInner({ universities, useAddressAutocomplete = true, existin
             onChange={(e) => setBathrooms(Number(e.target.value))}
             className="mt-1 w-full rounded-md border border-border px-3 py-2 text-sm"
           >
-            {[1, 2, 3].map((n) => (
+            {Array.from({ length: 5 }, (_, i) => i + 1).map((n) => (
               <option key={n} value={n}>
-                {n === 3 ? "3+" : n}
+                {n}
               </option>
             ))}
           </select>
